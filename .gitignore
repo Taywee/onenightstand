@@ -26,3 +26,8 @@
 *.exe
 *.out
 *.app
+onenightstand
+
+# Temp files
+*.sw?
+*.pyc
