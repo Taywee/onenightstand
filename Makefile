@@ -1,5 +1,5 @@
 build = Debug
-objects = main.o crypto.o
+objects = main.o crypto.o coding.o
 CC = clang
 CXX = clang++
 
@@ -32,8 +32,11 @@ clean :
 onenightstand : $(objects)
 	$(link) -o onenightstand $(objects)
 
-main.o : main.cxx crypto.hxx
+main.o : main.cxx crypto.hxx coding.hxx
 	$(compile) -o main.o main.cxx 
 
 crypto.o : crypto.cxx crypto.hxx
 	$(compile) -o crypto.o crypto.cxx
+
+coding.o : coding.cxx coding.hxx
+	$(compile) -o coding.o coding.cxx

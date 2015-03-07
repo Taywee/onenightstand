@@ -1,21 +1,33 @@
+/*
+    onenightstand - OTP generator system
+    Copyright (C) 2015 Taylor C. Richberger
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    The entire text of the license is contained in LICENSE.GPLv3
+*/
 #include <iostream>
 #include <cstring>
 #include <vector>
 #include <array>
 
 #include "crypto.hxx"
+#include "coding.hxx"
 
 int main(int argc, char **argv)
 {
-    std::vector<char> key;
-    std::vector<char> message;
-    if (argc > 2)
+    std::vector<char> input;
+
+    if (argc > 1)
     {
-        key.assign(argv[1], argv[1] + strlen(argv[1]));
-        message.assign(argv[2], argv[2] + strlen(argv[2]));
+        input.assign(argv[1], argv[1] + strlen(argv[1]));
     }
 
-    std::array<uint8_t, 20> hash(Hmac<20, 64>(Sha1Sum, key, message));
-    std::cout.write(reinterpret_cast<char *>(hash.data()), hash.size());
+    std::vector<char> decoded(Base32Decode(input));
+    std::cout.write(reinterpret_cast<char *>(decoded.data()), decoded.size());
+    std::cout << std::endl;
     return 0;
 }

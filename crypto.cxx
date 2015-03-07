@@ -1,3 +1,10 @@
+/*
+    Copyright (c) 2015 Taylor C. Richberger
+
+    The contents of this file are licensed MIT.
+    The terms of this license are contained in LICENSE.MIT within this repository
+*/
+
 #include "crypto.hxx"
 
 #include <iterator>
@@ -58,7 +65,7 @@ std::array<uint8_t, 20> Sha1Sum(const std::vector<char> &input)
     // Make message congruent to 448 (mod 512) bits, by padding with 0s
     if ((message.size() - 56) % 64 != 0)
     {
-        message.resize(message.size() + 64 - ((message.size() - 56) % 64));
+        message.resize(message.size() + 64 - ((message.size() - 56) % 64), '\0');
     }
 
 
@@ -165,7 +172,7 @@ std::array<uint8_t, N> Hmac(std::function<std::array<uint8_t, N>(const std::vect
     }
     if (key.size() < B)
     {
-        key.resize(B);
+        key.resize(B, '\0');
     }
 
     std::array<uint8_t, B> o_key_pad;
