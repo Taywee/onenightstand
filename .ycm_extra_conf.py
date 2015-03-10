@@ -42,7 +42,6 @@ flags = [
 '-fexceptions',
 '-DNDEBUG',
 '-std=c++11',
-'-stdlib=libc++',
 '-x', 'c++',
 '-I', '.',
 '-isystem', '/usr/include',

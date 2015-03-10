@@ -4,12 +4,13 @@
     The contents of this file are licensed MIT.
     The terms of this license are contained in LICENSE.MIT within this repository
 */
-#include <cstdint>
-#include <array>
+# pragma once
+
 #include <vector>
 #include <functional>
 
-std::array<uint8_t, 20> Sha1Sum(const std::vector<char> &input);
+// All hash functions take and return a std::vector<uint8_t>, so they can be used as generic input to Hmac
 
-template <size_t N, size_t B>
-std::array<uint8_t, N> Hmac(std::function<std::array<uint8_t, N>(const std::vector<char> &)> hash, std::vector<char> key, const std::vector<char> &message);
+extern std::vector<uint8_t> Sha1Sum(const std::vector<uint8_t> &input);
+
+extern std::vector<uint8_t> Hmac(std::function<std::vector<uint8_t>(const std::vector<uint8_t> &)> hash, const unsigned int blockSize, std::vector<uint8_t> key, const std::vector<uint8_t> &message);

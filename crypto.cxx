@@ -10,6 +10,8 @@
 #include <iterator>
 #include <iostream>
 #include <algorithm>
+#include <cstdint>
+#include <array>
 
 inline uint32_t LRot32(const uint32_t number, uint8_t places)
 {
@@ -54,7 +56,7 @@ inline uint32_t Sha1F3(const uint32_t a, const uint32_t b, const uint32_t c)
     return (a & b) | (a & c) | (b & c);
 }
 
-std::array<uint8_t, 20> Sha1Sum(const std::vector<char> &input)
+std::vector<uint8_t> Sha1Sum(const std::vector<uint8_t> &input)
 {
     std::vector<uint8_t> message(input.begin(), input.end());
 
@@ -153,7 +155,7 @@ std::array<uint8_t, 20> Sha1Sum(const std::vector<char> &input)
         h[4] += e;
     }
 
-    std::array<uint8_t, 20> output;
+    std::vector<uint8_t> output(20);
     for (unsigned int i = 0; i < 5; ++i)
     {
         unsigned int start = i * 4;
@@ -162,37 +164,32 @@ std::array<uint8_t, 20> Sha1Sum(const std::vector<char> &input)
     return output;
 }
 
-template <size_t N, size_t B>
-std::array<uint8_t, N> Hmac(std::function<std::array<uint8_t, N>(const std::vector<char> &)> hash, std::vector<char> key, const std::vector<char> &message)
+std::vector<uint8_t> Hmac(std::function<std::vector<uint8_t>(const std::vector<uint8_t> &)> hash, const unsigned int blockSize, std::vector<uint8_t> key, const std::vector<uint8_t> &message)
 {
-    if (key.size() > B)
+    if (key.size() > blockSize)
     {
-        std::array<uint8_t, N> newKey(hash(key));
+        std::vector<uint8_t> newKey(hash(key));
         key.assign(newKey.begin(), newKey.end());
     }
-    if (key.size() < B)
+    if (key.size() < blockSize)
     {
-        key.resize(B, '\0');
+        key.resize(blockSize, '\0');
     }
 
-    std::array<uint8_t, B> o_key_pad;
-    std::array<uint8_t, B> i_key_pad;
+    std::vector<uint8_t> o_key_pad(blockSize);
+    std::vector<uint8_t> i_key_pad(blockSize);
 
-    for (unsigned int i = 0; i < B; ++i)
+    for (unsigned int i = 0; i < key.size(); ++i)
     {
         o_key_pad[i] = 0x5c ^ key[i];
         i_key_pad[i] = 0x36 ^ key[i];
     }
-    std::vector<char> insideMessage(i_key_pad.begin(), i_key_pad.end());
+    std::vector<uint8_t> insideMessage(i_key_pad.begin(), i_key_pad.end());
     std::copy(message.begin(), message.end(), std::back_inserter(insideMessage));
 
-    std::array<uint8_t, N> hashedInside(hash(insideMessage));
+    std::vector<uint8_t> hashedInside(hash(insideMessage));
 
-    std::vector<char> outsideMessage(o_key_pad.begin(), o_key_pad.end());
+    std::vector<uint8_t> outsideMessage(o_key_pad.begin(), o_key_pad.end());
     std::copy(hashedInside.begin(), hashedInside.end(), std::back_inserter(outsideMessage));
     return hash(outsideMessage);
 }
-
-// Explicit initialization for SHA1
-template
-std::array<uint8_t, 20> Hmac<20, 64>(std::function<std::array<uint8_t, 20>(const std::vector<char> &)> hash, std::vector<char> key, const std::vector<char> &message);
