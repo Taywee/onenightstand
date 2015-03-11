@@ -2,13 +2,21 @@
 
 #include <cctype>
 #include <sstream>
+#include <algorithm>
 
 Account::Account(const std::string &name, const std::string &description, const Type type, const unsigned short digits, const Algorithm algorithm, const unsigned int count, const std::string &secret) : name(name), description(description), type(type), digits(digits), algorithm(algorithm), count(count), secret(secret)
 {
+    this->name.erase(std::remove(this->name.begin(), this->name.end(), ':'), this->name.end());
+    this->description.erase(std::remove(this->description.begin(), this->description.end(), ':'), this->description.end());
+    this->secret.erase(std::remove(this->secret.begin(), this->secret.end(), ':'), this->secret.end());
 }
 
 Account::Account(const std::string &name, const std::string &description, const std::string &type, const std::string &digits, const std::string &algorithm, const std::string &count, const std::string &secret) : name(name), description(description), secret(secret)
 {
+    this->name.erase(std::remove(this->name.begin(), this->name.end(), ':'), this->name.end());
+    this->description.erase(std::remove(this->description.begin(), this->description.end(), ':'), this->description.end());
+    this->secret.erase(std::remove(this->secret.begin(), this->secret.end(), ':'), this->secret.end());
+
     if (toupper(type.front()) == 'T')
     {
         this->type = Type::TOTP;
