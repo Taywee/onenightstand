@@ -3,11 +3,11 @@
 #include <cctype>
 #include <sstream>
 
-Account::Account(const std::string &name, const std::string &description, const Type type, const unsigned short digits, const Algorithm algorithm, const unsigned int interval, const std::string &secret) : name(name), description(description), type(type), digits(digits), algorithm(algorithm), interval(interval), secret(secret)
+Account::Account(const std::string &name, const std::string &description, const Type type, const unsigned short digits, const Algorithm algorithm, const unsigned int count, const std::string &secret) : name(name), description(description), type(type), digits(digits), algorithm(algorithm), count(count), secret(secret)
 {
 }
 
-Account::Account(const std::string &name, const std::string &description, const std::string &type, const std::string &digits, const std::string &algorithm, const std::string &interval, const std::string &secret) : name(name), description(description), secret(secret)
+Account::Account(const std::string &name, const std::string &description, const std::string &type, const std::string &digits, const std::string &algorithm, const std::string &count, const std::string &secret) : name(name), description(description), secret(secret)
 {
     if (toupper(type.front()) == 'T')
     {
@@ -48,7 +48,7 @@ Account::Account(const std::string &name, const std::string &description, const 
     }
     {
         std::stringstream conv;
-        conv << interval;
-        conv >> this->interval;
+        conv << count;
+        conv >> this->count;
     }
 }

@@ -26,9 +26,9 @@ struct Account
         SHA256,
         SHA512
     } algorithm;
-    unsigned int interval;
+    unsigned long count;
     std::string secret;
 
-    Account(const std::string &name, const std::string &description, const Type type, const unsigned short digits, const Algorithm algorithm, const unsigned int interval, const std::string &secret);
-    Account(const std::string &name, const std::string &description, const std::string &type, const std::string &digits, const std::string &algorithm, const std::string &interval, const std::string &secret);
+    Account(const std::string &name, const std::string &description, const Type type, const unsigned short digits, const Algorithm algorithm, const unsigned int count, const std::string &secret);
+    Account(const std::string &name, const std::string &description, const std::string &type, const std::string &digits, const std::string &algorithm, const std::string &count, const std::string &secret);
 };

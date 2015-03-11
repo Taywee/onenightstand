@@ -44,5 +44,5 @@ coding.o : coding.cxx coding.hxx
 account.o : account.cxx account.hxx
 	$(compile) -o account.o account.cxx
 
-otp.o : otp.cxx otp.hxx crypto.hxx
+otp.o : otp.cxx otp.hxx crypto.hxx account.hxx
 	$(compile) -o otp.o otp.cxx
