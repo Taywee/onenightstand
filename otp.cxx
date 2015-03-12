@@ -1,6 +1,4 @@
-#include "otp.hxx"
-
-#include "crypto.hxx"
+#include "onenightstand.hxx"
 
 #include <iomanip>
 #include <fstream>

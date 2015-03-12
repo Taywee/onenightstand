@@ -1,11 +1,4 @@
-/*
-    Copyright (c) 2015 Taylor C. Richberger
-
-    The contents of this file are licensed MIT.
-    The terms of this license are contained in LICENSE.MIT within this repository
-*/
-
-#include "crypto.hxx"
+#include "onenightstand.hxx"
 
 #include <iterator>
 #include <iostream>

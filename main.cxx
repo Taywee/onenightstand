@@ -18,10 +18,7 @@
 #include <unordered_set>
 #include <unistd.h>
 
-#include "crypto.hxx"
-#include "coding.hxx"
-#include "account.hxx"
-#include "otp.hxx"
+#include "onenightstand.hxx"
 
 enum class Mode
 {

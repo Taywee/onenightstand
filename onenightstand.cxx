@@ -1,8 +1,6 @@
 #include "onenightstand.hxx"
 
-#include <cctype>
-#include <sstream>
-#include <algorithm>
+// Account stuff
 
 Account::Account(const std::string &name, const std::string &description, const Type type, const unsigned short digits, const Algorithm algorithm, const unsigned int count, const std::string &secret) : name(name), description(description), type(type), digits(digits), algorithm(algorithm), count(count), secret(secret)
 {
@@ -60,3 +58,4 @@ Account::Account(const std::string &name, const std::string &description, const 
         conv >> this->count;
     }
 }
+

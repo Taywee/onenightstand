@@ -32,17 +32,17 @@ clean :
 onenightstand : $(objects)
 	$(link) -o onenightstand $(objects)
 
-main.o : main.cxx crypto.hxx coding.hxx account.hxx
+main.o : main.cxx onenightstand.hxx
 	$(compile) -o main.o main.cxx 
 
-crypto.o : crypto.cxx crypto.hxx
+crypto.o : crypto.cxx onenightstand.hxx
 	$(compile) -o crypto.o crypto.cxx
 
-coding.o : coding.cxx coding.hxx
+coding.o : coding.cxx onenightstand.hxx
 	$(compile) -o coding.o coding.cxx
 
-account.o : account.cxx account.hxx
+account.o : account.cxx onenightstand.hxx
 	$(compile) -o account.o account.cxx
 
-otp.o : otp.cxx otp.hxx crypto.hxx account.hxx
+otp.o : otp.cxx onenightstand.hxx
 	$(compile) -o otp.o otp.cxx
