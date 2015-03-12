@@ -103,6 +103,7 @@ int main(int argc, char **argv)
                     if (arguments.empty() || set.find(account.name) != set.end())
                     {
                         OTP(account);
+                        std::cout << std::endl;
                     }
                 }
                 SaveAccounts(accounts);
