@@ -9,6 +9,7 @@
 
 #include "cryptpp/crypto.hxx"
 
+// Generate a HMAC-based OTP
 std::string PWGen(std::function<void (std::ostream &, std::istream &)> hash, const size_t blockSize, const bool timeBased, const time_t count, const unsigned int digits, const std::string &secret, const time_t time)
 {
     uint64_t message;
