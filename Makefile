@@ -1,5 +1,5 @@
 build = Debug
-objects = main.o crypto.o coding.o account.o otp.o
+objects = main.o account.o otp.o
 CC = clang
 CXX = clang++
 
@@ -29,20 +29,18 @@ all : onenightstand
 clean :
 	-rm -v onenightstand $(objects)
 
-onenightstand : $(objects)
-	$(link) -o onenightstand $(objects)
+onenightstand : $(objects) cryptpp/libcryptpp.a
+	$(link) -o onenightstand $(objects) cryptpp/libcryptpp.a
 
-main.o : main.cxx onenightstand.hxx
+cryptpp/libcryptpp.a :
+	cd cryptpp && git pull
+	make -C cryptpp libcryptpp.a
+
+main.o : main.cxx account.hxx otp.hxx
 	$(compile) -o main.o main.cxx 
 
-crypto.o : crypto.cxx onenightstand.hxx
-	$(compile) -o crypto.o crypto.cxx
-
-coding.o : coding.cxx onenightstand.hxx
-	$(compile) -o coding.o coding.cxx
-
-account.o : account.cxx onenightstand.hxx
+account.o : account.cxx account.hxx
 	$(compile) -o account.o account.cxx
 
-otp.o : otp.cxx onenightstand.hxx
+otp.o : otp.cxx otp.hxx
 	$(compile) -o otp.o otp.cxx

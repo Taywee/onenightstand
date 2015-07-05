@@ -18,7 +18,10 @@
 #include <unordered_set>
 #include <unistd.h>
 
-#include "onenightstand.hxx"
+#include "account.hxx"
+#include "otp.hxx"
+#include "cryptpp/crypto.hxx"
+#include "cryptpp/coding.hxx"
 
 enum class Mode
 {
@@ -83,7 +86,7 @@ int main(int argc, char **argv)
 
     std::vector<std::string> arguments;
 
-    for (unsigned int i = optind; i < argc; ++i)
+    for (int i = optind; i < argc; ++i)
     {
         arguments.emplace_back(argv[i]);
     }
@@ -251,7 +254,9 @@ void OTP(Account &account)
         std::cout << std::setw(4) << account.count << ": ";
     }
 
-    std::cout << PWGen(Sha1Sum, 64, account.type == Account::Type::TOTP, account.count, account.digits, Base32Decode(std::vector<char>(account.secret.begin(), account.secret.end())), time);
+    const std::string secret(Base32::IterDecode(account.secret.begin(), account.secret.end()));
+
+    std::cout << PWGen(Sha1::Sum, Sha1::BlockSize, account.type == Account::Type::TOTP, account.count, account.digits, secret, time);
     std::cout << std::endl;
     if (account.type == Account::Type::HOTP)
     {
