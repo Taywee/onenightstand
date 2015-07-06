@@ -1,0 +1,3 @@
+[submodule "cryptpp"]
+	path = cryptpp
+	url = git@github.com:Taywee/cryptpp.git
