@@ -1,11 +1,11 @@
-build = Debug
+build = Release
 objects = main.o account.o otp.o
 CC = clang
 CXX = clang++
 
 commonOptsAll = -Wall -Wextra -std=c++11
 commonDebugOpts = -ggdb -O0 -DDEBUG
-commonReleaseOpts = -s -O3 -march=native
+commonReleaseOpts = -O3 -march=native
 commonOpts = $(commonOptsAll) $(common$(build)Opts)
 
 compileOptsAll = -c
@@ -14,7 +14,7 @@ compileOptsDebug =
 compileOpts = $(commonOpts) $(compileOptsAll) $(compileOpts$(build))
 
 linkerOptsAll =
-linkerOptsRelease =
+linkerOptsRelease = -s
 linkerOptsDebug =
 linkerOpts = $(commonOpts) $(linkerOptsAll) $(linkerOpts$(build))
 
