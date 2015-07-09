@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-09 13:55-0600\n"
+"POT-Creation-Date: 2015-07-09 14:18-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,85 +17,85 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: main.cxx:275
+#: main.cxx:276
 msgid " -s name 'Account description' TOTP 6 SHA1 30 ABCDEFGHIJ2345"
 msgstr ""
 
-#: main.cxx:264
+#: main.cxx:265
 msgid ""
 "Create or set information for one account.  Arguments are, in order, name, "
 "description, TOTP or HOTP, digits, algorithm, count or interval number, "
 "secret"
 msgstr ""
 
-#: main.cxx:242 main.cxx:243
+#: main.cxx:246
 #, c-format
 msgid "Creating new account %s"
 msgstr ""
 
-#: main.cxx:260
+#: main.cxx:261
 msgid "Delete accounts named by Args list."
 msgstr ""
 
-#: main.cxx:130 main.cxx:131
+#: main.cxx:144
 #, c-format
 msgid "Deleting account %s: %s"
 msgstr ""
 
-#: main.cxx:275
+#: main.cxx:276
 msgid "Ex:"
 msgstr ""
 
-#: main.cxx:263
+#: main.cxx:264
 msgid ""
 "Generate OTPs for all accounts.  If accounts are specified in arguments, "
 "only show those. (default)"
 msgstr ""
 
-#: main.cxx:262
+#: main.cxx:263
 msgid ""
 "List accounts and information.  List twice to also show secret pass.  If "
 "accounts are specified in arguments, only show (and increment for HOTP) "
 "those."
 msgstr ""
 
-#: main.cxx:261
+#: main.cxx:262
 msgid "Show this help menu and exit."
 msgstr ""
 
-#: main.cxx:228 main.cxx:229
+#: main.cxx:237
 #, c-format
 msgid "Updating account %s"
 msgstr ""
 
-#: main.cxx:269
+#: main.cxx:270
 msgid "When multiple options are listed, the latest takes precedence."
 msgstr ""
 
-#: main.cxx:191
+#: main.cxx:202
 msgid "algorithm"
 msgstr ""
 
-#: main.cxx:192
+#: main.cxx:203
 msgid "count"
 msgstr ""
 
-#: main.cxx:188
+#: main.cxx:199
 msgid "description"
 msgstr ""
 
-#: main.cxx:190
+#: main.cxx:201
 msgid "digits"
 msgstr ""
 
-#: main.cxx:192
+#: main.cxx:203
 msgid "interval"
 msgstr ""
 
-#: main.cxx:193
+#: main.cxx:204
 msgid "secret"
 msgstr ""
 
-#: main.cxx:189
+#: main.cxx:200
 msgid "type"
 msgstr ""

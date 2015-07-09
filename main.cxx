@@ -26,6 +26,22 @@
 #include "cryptpp/coding.hxx"
 #include "clipp/table.hxx"
 
+template <typename ...Types>
+std::string gettextf(const std::string &format, Types ...args)
+{
+    const char *translated = gettext(format.c_str());
+
+    std::vector<char> buffer;
+    buffer.resize(snprintf(NULL, 0, translated, args...));
+    snprintf(buffer.data(), buffer.size(), translated, args...);
+    if (buffer.back() == '\0')
+    {
+        buffer.pop_back();
+    }
+
+    return std::string(buffer.data(), buffer.size());
+}
+
 enum class Mode
 {
     OTP,
@@ -125,12 +141,7 @@ int main(int argc, char **argv)
                 {
                     if (set.find(it->name) != set.end())
                     {
-                        std::vector<char> message;
-                        // Set buffer
-                        message.resize(snprintf(NULL, 0, gettext("Deleting account %s: %s"), it->name.c_str(), it->description.c_str()));
-                        snprintf(message.data(), message.size(), gettext("Deleting account %s: %s"), it->name.c_str(), it->description.c_str());
-
-                        std::cout << message.data() << std::endl;
+                        std::cout << gettextf("Deleting account %s: %s", it->name.c_str(), it->description.c_str()) << std::endl;
                         it = accounts.erase(it);
                     } else
                     {
@@ -223,12 +234,7 @@ int main(int argc, char **argv)
                 {
                     if (it->name == newAccount.name)
                     {
-                        std::vector<char> message;
-                        // Set buffer
-                        message.resize(snprintf(NULL, 0, gettext("Updating account %s"), newAccount.name.c_str()));
-                        snprintf(message.data(), message.size(), gettext("Updating account %s"), newAccount.name.c_str());
-
-                        std::cout << message.data() << std::endl;
+                        std::cout << gettextf("Updating account %s", newAccount.name.c_str()) << std::endl;
 
                         *it = newAccount;
                         found = true;
@@ -237,12 +243,7 @@ int main(int argc, char **argv)
                 }
                 if (!found)
                 {
-                    std::vector<char> message;
-                    // Set buffer
-                    message.resize(snprintf(NULL, 0, gettext("Creating new account %s"), newAccount.name.c_str()));
-                    snprintf(message.data(), message.size(), gettext("Creating new account %s"), newAccount.name.c_str());
-
-                    std::cout << message.data() << std::endl;
+                    std::cout << gettextf("Creating new account %s", newAccount.name.c_str()) << std::endl;
 
                     accounts.emplace_back(newAccount);
                 }

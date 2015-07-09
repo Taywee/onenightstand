@@ -25,7 +25,7 @@ link = $(CXX) $(linkerOpts)
 
 .PHONY : all clean
 
-all : onenightstand 
+all : onenightstand i18n/onenightstand.pot
 
 clean :
 	-rm -v onenightstand $(objects)
@@ -49,3 +49,6 @@ account.o : account.cxx account.hxx
 
 otp.o : otp.cxx otp.hxx
 	$(compile) -o otp.o otp.cxx
+
+i18n/onenightstand.pot : main.cxx
+	xgettext -d onenightstand -kgettextf -kgettext -o i18n/onenightstand.pot -s main.cxx
