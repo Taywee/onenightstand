@@ -1,0 +1,101 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-07-09 13:55-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: main.cxx:275
+msgid " -s name 'Account description' TOTP 6 SHA1 30 ABCDEFGHIJ2345"
+msgstr ""
+
+#: main.cxx:264
+msgid ""
+"Create or set information for one account.  Arguments are, in order, name, "
+"description, TOTP or HOTP, digits, algorithm, count or interval number, "
+"secret"
+msgstr ""
+
+#: main.cxx:242 main.cxx:243
+#, c-format
+msgid "Creating new account %s"
+msgstr ""
+
+#: main.cxx:260
+msgid "Delete accounts named by Args list."
+msgstr ""
+
+#: main.cxx:130 main.cxx:131
+#, c-format
+msgid "Deleting account %s: %s"
+msgstr ""
+
+#: main.cxx:275
+msgid "Ex:"
+msgstr ""
+
+#: main.cxx:263
+msgid ""
+"Generate OTPs for all accounts.  If accounts are specified in arguments, "
+"only show those. (default)"
+msgstr ""
+
+#: main.cxx:262
+msgid ""
+"List accounts and information.  List twice to also show secret pass.  If "
+"accounts are specified in arguments, only show (and increment for HOTP) "
+"those."
+msgstr ""
+
+#: main.cxx:261
+msgid "Show this help menu and exit."
+msgstr ""
+
+#: main.cxx:228 main.cxx:229
+#, c-format
+msgid "Updating account %s"
+msgstr ""
+
+#: main.cxx:269
+msgid "When multiple options are listed, the latest takes precedence."
+msgstr ""
+
+#: main.cxx:191
+msgid "algorithm"
+msgstr ""
+
+#: main.cxx:192
+msgid "count"
+msgstr ""
+
+#: main.cxx:188
+msgid "description"
+msgstr ""
+
+#: main.cxx:190
+msgid "digits"
+msgstr ""
+
+#: main.cxx:192
+msgid "interval"
+msgstr ""
+
+#: main.cxx:193
+msgid "secret"
+msgstr ""
+
+#: main.cxx:189
+msgid "type"
+msgstr ""

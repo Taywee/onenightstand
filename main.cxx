@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <unordered_set>
 #include <unistd.h>
+#include <libintl.h>
+#include <cstdio>
 
 #include "account.hxx"
 #include "otp.hxx"
@@ -37,6 +39,9 @@ inline void OTP(Account &account);
 
 int main(int argc, char **argv)
 {
+    setlocale(LC_ALL,"");
+    textdomain("onenightstand");
+
     Mode mode = Mode::OTP;
 
     int opt;
@@ -120,7 +125,12 @@ int main(int argc, char **argv)
                 {
                     if (set.find(it->name) != set.end())
                     {
-                        std::cout << "Deleting account " << it->name << ": " << it->description << std::endl;
+                        std::vector<char> message;
+                        // Set buffer
+                        message.resize(snprintf(NULL, 0, gettext("Deleting account %s: %s"), it->name.c_str(), it->description.c_str()));
+                        snprintf(message.data(), message.size(), gettext("Deleting account %s: %s"), it->name.c_str(), it->description.c_str());
+
+                        std::cout << message.data() << std::endl;
                         it = accounts.erase(it);
                     } else
                     {
@@ -139,51 +149,59 @@ int main(int argc, char **argv)
                 {
                     if (arguments.empty() || set.find(account.name) != set.end())
                     {
-                        std::cout << account.name << ':' << '\n'
-                            << std::setw(20) << "description: " << account.description << '\n'
-                            << std::setw(20) << "type: " << (account.type == Account::Type::HOTP ? "HOTP" : "TOTP") << '\n'
-                            << std::setw(20) << "digits: " << account.digits << '\n'
-                            << std::setw(20) << "algorithm: ";
+                        std::string algorithm;
 
                         switch (account.algorithm)
                         {
                             case Account::Algorithm::MD5:
                                 {
-                                    std::cout << "MD5";
+                                    algorithm = "MD5";
                                     break;
                                 }
 
                             case Account::Algorithm::SHA1:
                                 {
-                                    std::cout << "SHA1";
+                                    algorithm = "SHA1";
                                     break;
                                 }
 
                             case Account::Algorithm::SHA256:
                                 {
-                                    std::cout << "SHA256";
+                                    algorithm = "SHA256";
                                     break;
                                 }
 
                             case Account::Algorithm::SHA512:
                                 {
-                                    std::cout << "SHA512";
+                                    algorithm = "SHA512";
                                     break;
                                 }
 
                             default:
                                 {
-                                    std::cout << "SHA1";
+                                    algorithm = "SHA1";
                                     break;
                                 }
                         }
-                        std::cout << '\n'
-                            << std::setw(20) << (account.type == Account::Type::HOTP ? "count: " : "interval: ") << account.count << '\n';
-                        if (listCount >= 2)
+
+                        std::list<std::vector<std::string>> table = {
+                            {gettext("description"), account.description},
+                            {gettext("type"), account.type == Account::Type::HOTP ? "HOTP" : "TOTP"},
+                            {gettext("digits"), std::to_string(account.digits)},
+                            {gettext("algorithm"), algorithm},
+                            {account.type == Account::Type::HOTP ? gettext("count") : gettext("interval"), std::to_string(account.count)},
+                            {gettext("secret"), account.secret}};
+
+                        const std::vector<unsigned int> lengths = {22, 50};
+
+                        if (listCount < 2)
                         {
-                            std::cout << std::setw(20) << "secret: " << account.secret << '\n';
+                            table.pop_back();
                         }
-                        std::cout << '\n';
+                        for (const std::vector<std::string> &item: table)
+                        {
+                            std::cout << Table::Row(item, lengths, "", "", "") << '\n';
+                        }
                     }
                 }
                 break;
@@ -205,7 +223,13 @@ int main(int argc, char **argv)
                 {
                     if (it->name == newAccount.name)
                     {
-                        std::cout << "Updating account " << newAccount.name << std::endl;
+                        std::vector<char> message;
+                        // Set buffer
+                        message.resize(snprintf(NULL, 0, gettext("Updating account %s"), newAccount.name.c_str()));
+                        snprintf(message.data(), message.size(), gettext("Updating account %s"), newAccount.name.c_str());
+
+                        std::cout << message.data() << std::endl;
+
                         *it = newAccount;
                         found = true;
                         break;
@@ -213,7 +237,13 @@ int main(int argc, char **argv)
                 }
                 if (!found)
                 {
-                    std::cout << "Creating new account " << newAccount.name << std::endl;
+                    std::vector<char> message;
+                    // Set buffer
+                    message.resize(snprintf(NULL, 0, gettext("Creating new account %s"), newAccount.name.c_str()));
+                    snprintf(message.data(), message.size(), gettext("Creating new account %s"), newAccount.name.c_str());
+
+                    std::cout << message.data() << std::endl;
+
                     accounts.emplace_back(newAccount);
                 }
                 SaveAccounts(accounts);
@@ -227,22 +257,22 @@ int main(int argc, char **argv)
 void Usage(const std::string &progName)
 {
     const std::list<std::vector<std::string>> options = {
-        {"", "-d", "Delete accounts named by Args list."},
-        {"", "-h", "Show this help menu and exit."},
-        {"", "-l", "List accounts and information.  List twice to also show secret pass.  If accounts are specified in arguments, only show (and increment for HOTP) those."},
-        {"", "-p", "Generate OTPs for all accounts.  If accounts are specified in arguments, only show those. (default)"},
-        {"", "-s", "Create or set information for one account.  Arguments are, in order, name, description, TOTP or HOTP, digits, algorithm, count or interval number, secret"}};
+        {"", "-d", gettext("Delete accounts named by Args list.")},
+        {"", "-h", gettext("Show this help menu and exit.")},
+        {"", "-l", gettext("List accounts and information.  List twice to also show secret pass.  If accounts are specified in arguments, only show (and increment for HOTP) those.")},
+        {"", "-p", gettext("Generate OTPs for all accounts.  If accounts are specified in arguments, only show those. (default)")},
+        {"", "-s", gettext("Create or set information for one account.  Arguments are, in order, name, description, TOTP or HOTP, digits, algorithm, count or interval number, secret")}};
     const std::vector<unsigned int> lengths = {8, 8, 56};
 
     std::cout << "USAGE:" << '\n'
               << "\t" << progName << " [-d] [-h] [-l[l]] [-p] [-s] [ Args... ]" << '\n'
-              << "\t" << "When multiple options are listed, the latest takes precedence." << '\n'
+              << "\t" << gettext("When multiple options are listed, the latest takes precedence.") << '\n'
               << '\n';
     for (const std::vector<std::string> &option: options)
     {
         std::cout << Table::Row(option, lengths, "", "", "") << '\n';
     }
-    std::cout << "\n\t\t" << "Ex:" << '\t' << progName << " -s name 'Account description' TOTP 6 SHA1 30 ABCDEFGHIJ2345" << '\n';
+    std::cout << "\n\t\t" << gettext("Ex:") << '\t' << progName << gettext(" -s name 'Account description' TOTP 6 SHA1 30 ABCDEFGHIJ2345") << '\n';
 }
 
 void OTP(Account &account)

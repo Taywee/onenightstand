@@ -31,3 +31,6 @@ onenightstand
 # Temp files
 *.sw?
 *.pyc
+
+# Compiled translation files
+*.mo

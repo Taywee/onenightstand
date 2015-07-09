@@ -1,0 +1,109 @@
+# onenightstand German translation
+# Copyright (C) 2015
+# This file is distributed under the same license as the onenightstand package.
+# Taylor C. Richberger <taywee@gmx.com> 2015
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-07-09 13:37-0600\n"
+"PO-Revision-Date: 2015-07-09 13:37-0600\n"
+"Last-Translator: Taylor C. Richberger <taywee@gmx.com>\n"
+"Language-Team: German\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: main.cxx:275
+msgid " -s name 'Account description' TOTP 6 SHA1 30 ABCDEFGHIJ2345"
+msgstr " -s Name 'Konto Beschreibung' TOTP 6 SHA1 30 ABCDEFGHIJ2345"
+
+#: main.cxx:264
+msgid ""
+"Create or set information for one account.  Arguments are, in order, name, "
+"description, TOTP or HOTP, digits, algorithm, count or interval number, "
+"secret"
+msgstr ""
+"Erstellen oder Satzinformationen für ein Konto.  Argumente sind jeweils "
+"Name, Beschreibung, TOTP oder HOTP, Stellen, Algorithmus, Anzahl oder Intervall, "
+"Geheimnis"
+
+#: main.cxx:242 main.cxx:243
+#, c-format
+msgid "Creating new account %s"
+msgstr "Erstellen neues Konto %s"
+
+#: main.cxx:260
+msgid "Delete accounts named by Args list."
+msgstr "Konto von Arg-Liste mit dem Namen zu löschen."
+
+#: main.cxx:130 main.cxx:131
+#, c-format
+msgid "Deleting account %s: %s"
+msgstr "Löschen Konto %s: %s"
+
+#: main.cxx:275
+msgid "Ex:"
+msgstr "Bei:"
+
+#: main.cxx:263
+msgid ""
+"Generate OTPs for all accounts.  If accounts are specified in arguments, "
+"only show those. (default)"
+msgstr ""
+"Generieren OTPs für alle Konten. Wenn Konten in Argumente angegeben, "
+"zeigen nur diejenigen. (Standard)"
+
+#: main.cxx:262
+msgid ""
+"List accounts and information.  List twice to also show secret pass.  If "
+"accounts are specified in arguments, only show (and increment for HOTP) "
+"those."
+msgstr ""
+"Liste Konten und Informationen. Liste zweimal, um auch zu zeigen geheime "
+"Pass ab. Wenn Konten in Argumente angegeben, nur zu zeigen (und Schrittweite "
+"für HOTP) Personen."
+
+#: main.cxx:261
+msgid "Show this help menu and exit."
+msgstr "Zeigen dieses Hilfe-Menü und beenden."
+
+#: main.cxx:228 main.cxx:229
+#, c-format
+msgid "Updating account %s"
+msgstr "Aktualisieren Konto %s"
+
+#: main.cxx:269
+msgid "When multiple options are listed, the latest takes precedence."
+msgstr "Wenn mehrere Optionen aufgelistet, die neueste Vorrang."
+
+#: main.cxx:191
+msgid "algorithm"
+msgstr "Algorithmus"
+
+#: main.cxx:192
+msgid "count"
+msgstr "Anzhal"
+
+#: main.cxx:188
+msgid "description"
+msgstr "Beschreibung"
+
+#: main.cxx:190
+msgid "digits"
+msgstr "Stellen"
+
+#: main.cxx:192
+msgid "interval"
+msgstr "Intervall"
+
+#: main.cxx:193
+msgid "secret"
+msgstr "Geheimnis"
+
+#: main.cxx:189
+msgid "type"
+msgstr "Art"
