@@ -34,3 +34,6 @@ onenightstand
 
 # Compiled translation files
 *.mo
+
+# extracted strings
+i18n/onenightstand.pot

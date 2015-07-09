@@ -26,22 +26,6 @@
 #include "cryptpp/coding.hxx"
 #include "clipp/table.hxx"
 
-template <typename ...Types>
-std::string gettextf(const std::string &format, Types ...args)
-{
-    const char *translated = gettext(format.c_str());
-
-    std::vector<char> buffer;
-    buffer.resize(snprintf(NULL, 0, translated, args...));
-    snprintf(buffer.data(), buffer.size(), translated, args...);
-    if (buffer.back() == '\0')
-    {
-        buffer.pop_back();
-    }
-
-    return std::string(buffer.data(), buffer.size());
-}
-
 enum class Mode
 {
     OTP,
@@ -52,6 +36,10 @@ enum class Mode
 
 inline void Usage(const std::string &progName);
 inline void OTP(Account &account);
+
+template <typename ...Types>
+inline std::string gettextf(const std::string &format, Types ...args);
+
 
 int main(int argc, char **argv)
 {
@@ -298,4 +286,20 @@ void OTP(Account &account)
     {
         ++account.count;
     }
+}
+
+template <typename ...Types>
+std::string gettextf(const std::string &format, Types ...args)
+{
+    const char *translated = gettext(format.c_str());
+
+    std::vector<char> buffer;
+    buffer.resize(snprintf(NULL, 0, translated, args...));
+    snprintf(buffer.data(), buffer.size(), translated, args...);
+    if (buffer.back() == '\0')
+    {
+        buffer.pop_back();
+    }
+
+    return std::string(buffer.data(), buffer.size());
 }

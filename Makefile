@@ -51,4 +51,5 @@ otp.o : otp.cxx otp.hxx
 	$(compile) -o otp.o otp.cxx
 
 i18n/onenightstand.pot : main.cxx
+	mkdir -p i18n
 	xgettext -d onenightstand -kgettextf -kgettext -o i18n/onenightstand.pot -s main.cxx
