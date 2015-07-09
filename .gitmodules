@@ -1,3 +1,6 @@
 [submodule "cryptpp"]
 	path = cryptpp
 	url = git@github.com:Taywee/cryptpp.git
+[submodule "clipp"]
+	path = clipp
+	url = git@github.com:Taywee/clipp.git

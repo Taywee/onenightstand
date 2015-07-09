@@ -22,6 +22,7 @@
 #include "otp.hxx"
 #include "cryptpp/crypto.hxx"
 #include "cryptpp/coding.hxx"
+#include "clipp/table.hxx"
 
 enum class Mode
 {
@@ -225,19 +226,23 @@ int main(int argc, char **argv)
 
 void Usage(const std::string &progName)
 {
+    const std::list<std::vector<std::string>> options = {
+        {"", "-d", "Delete accounts named by Args list."},
+        {"", "-h", "Show this help menu and exit."},
+        {"", "-l", "List accounts and information.  List twice to also show secret pass.  If accounts are specified in arguments, only show (and increment for HOTP) those."},
+        {"", "-p", "Generate OTPs for all accounts.  If accounts are specified in arguments, only show those. (default)"},
+        {"", "-s", "Create or set information for one account.  Arguments are, in order, name, description, TOTP or HOTP, digits, algorithm, count or interval number, secret"}};
+    const std::vector<unsigned int> lengths = {8, 8, 56};
+
     std::cout << "USAGE:" << '\n'
               << "\t" << progName << " [-d] [-h] [-l[l]] [-p] [-s] [ Args... ]" << '\n'
               << "\t" << "When multiple options are listed, the latest takes precedence." << '\n'
-              << '\n'
-              << "\t\t" << "-d" << "\t" << "Delete accounts named by Args list." << '\n'
-              << "\t\t" << "-h" << "\t" << "Show this help menu and exit." << '\n'
-              << "\t\t" << "-l" << "\t" << "List accounts and information.  List twice to also show secret pass.  If accounts" << '\n'
-              << "\t\t\t" <<               "are specified in arguments, only show (and increment for HOTP) those." << '\n'
-              << "\t\t" << "-p" << "\t" << "Generate OTPs for all accounts.  If accounts are specified in arguments, only show those. (default)" << '\n'
-              << "\t\t" << "-s" << "\t" << "Create or set information for one account.  Arguments are, in order, " << '\n'
-              << "\t\t\t" <<               "name, description, TOTP or HOTP, digits, algorithm, count or interval number, secret " << '\n'
-              << '\n'
-              << "\t\t" << "Ex:" << '\t' << progName << "-s name 'Account description' TOTP 6 SHA1 30 ABCDEFGHIJ2345" << '\n';
+              << '\n';
+    for (const std::vector<std::string> &option: options)
+    {
+        std::cout << Table::Row(option, lengths, "", "", "") << '\n';
+    }
+    std::cout << "\n\t\t" << "Ex:" << '\t' << progName << " -s name 'Account description' TOTP 6 SHA1 30 ABCDEFGHIJ2345" << '\n';
 }
 
 void OTP(Account &account)
