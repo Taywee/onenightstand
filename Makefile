@@ -4,35 +4,46 @@ libs = cryptpp/libcryptpp.a clipp/libclipp.a
 CC = clang
 CXX = clang++
 
-extraFlags =
-
 commonOptsAll = -Wall -Wextra -std=c++11 $(extraFlags)
 commonDebugOpts = -ggdb -O0 -DDEBUG
 commonReleaseOpts = -O3 -march=native
 commonOpts = $(commonOptsAll) $(common$(build)Opts)
 
 compileOptsAll = -c
+
+ifeq ($(USE_GETTEXT),1)
+compileOptsAll += -DGETTEXT
+endif
 compileOptsRelease =
 compileOptsDebug =
 compileOpts = $(compileOptsAll) $(compileOpts$(build)) $(commonOpts) 
 
-linkerOptsAll = -lintl -lgettextlib
+linkerOptsAll =
+ifeq ($(USE_GETTEXT),1)
+linkerOptsAll += -lgettextlib
+endif
 linkerOptsRelease =
 linkerOptsDebug =
 linkerOpts = $(commonOpts) $(linkerOptsAll) $(linkerOpts$(build))
 
 compile = $(CXX) $(compileOpts)
 
-
 .PHONY : all clean
 
+ifeq ($(USE_GETTEXT),1)
 all : onenightstand i18n/onenightstand.pot
+else
+all : onenightstand
+endif
 
 clean :
-	-rm -v onenightstand $(objects)
+	-rm -v onenightstand $(objects) i18n/onenightstand.pot
 
 onenightstand : $(objects) $(libs)
 	$(CXX) -o onenightstand $(objects) $(libs) $(linkerOpts)
+ifeq ($(build),Release)
+	strip onenightstand
+endif
 
 cryptpp/libcryptpp.a :
 	make -C cryptpp libcryptpp.a

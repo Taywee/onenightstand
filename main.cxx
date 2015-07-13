@@ -7,7 +7,7 @@
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    The entire text of the license is contained in LICENSE.GPLv3
+    The entire text of the license is contained in LICENSE
 */
 #include <iostream>
 #include <iomanip>
@@ -21,7 +21,7 @@
 #include <libintl.h>
 #else
 #define gettext(x) x
-#define textdomain(x) x
+#define textdomain(x)
 #endif
 #include <cstdio>
 

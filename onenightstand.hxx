@@ -1,8 +1,12 @@
 /*
-    Copyright (c) 2015 Taylor C. Richberger
+    Copyright (C) 2015 Taylor C. Richberger
 
-    The contents of this file are licensed MIT.
-    The terms of this license are contained in LICENSE.MIT within this repository
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    The entire text of the license is contained in LICENSE
 */
 #pragma once
 
