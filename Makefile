@@ -4,7 +4,9 @@ libs = cryptpp/libcryptpp.a clipp/libclipp.a
 CC = clang
 CXX = clang++
 
-commonOptsAll = -Wall -Wextra -std=c++11
+extraFlags =
+
+commonOptsAll = -Wall -Wextra -std=c++11 $(extraFlags)
 commonDebugOpts = -ggdb -O0 -DDEBUG
 commonReleaseOpts = -O3 -march=native
 commonOpts = $(commonOptsAll) $(common$(build)Opts)
@@ -12,15 +14,14 @@ commonOpts = $(commonOptsAll) $(common$(build)Opts)
 compileOptsAll = -c
 compileOptsRelease =
 compileOptsDebug =
-compileOpts = $(commonOpts) $(compileOptsAll) $(compileOpts$(build))
+compileOpts = $(compileOptsAll) $(compileOpts$(build)) $(commonOpts) 
 
-linkerOptsAll =
-linkerOptsRelease = -s
+linkerOptsAll = -lintl -lgettextlib
+linkerOptsRelease =
 linkerOptsDebug =
 linkerOpts = $(commonOpts) $(linkerOptsAll) $(linkerOpts$(build))
 
 compile = $(CXX) $(compileOpts)
-link = $(CXX) $(linkerOpts)
 
 
 .PHONY : all clean
@@ -31,14 +32,12 @@ clean :
 	-rm -v onenightstand $(objects)
 
 onenightstand : $(objects) $(libs)
-	$(link) -o onenightstand $(objects) $(libs)
+	$(CXX) -o onenightstand $(objects) $(libs) $(linkerOpts)
 
 cryptpp/libcryptpp.a :
-	cd cryptpp && git pull
 	make -C cryptpp libcryptpp.a
 
 clipp/libclipp.a :
-	cd clipp && git pull
 	make -C clipp libclipp.a
 
 main.o : main.cxx account.hxx otp.hxx

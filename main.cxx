@@ -17,7 +17,12 @@
 #include <algorithm>
 #include <unordered_set>
 #include <unistd.h>
+#ifdef GETTEXT
 #include <libintl.h>
+#else
+#define gettext(x) x
+#define textdomain(x) x
+#endif
 #include <cstdio>
 
 #include "account.hxx"
