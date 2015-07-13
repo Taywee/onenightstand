@@ -1,37 +1,39 @@
-build = Release
-objects = main.o account.o otp.o
-libs = cryptpp/libcryptpp.a clipp/libclipp.a
 CC = clang
 CXX = clang++
+PREFIX = /usr/local
+BUILD = Release
+
+objects = main.o account.o otp.o
+libs = cryptpp/libcryptpp.a clipp/libclipp.a
 
 commonOptsAll = -Wall -Wextra -std=c++11 $(extraFlags)
 commonDebugOpts = -ggdb -O0 -DDEBUG
 commonReleaseOpts = -O3 -march=native
-commonOpts = $(commonOptsAll) $(common$(build)Opts)
+commonOpts = $(commonOptsAll) $(common$(BUILD)Opts)
 
 compileOptsAll = -c
 
-ifeq ($(USE_GETTEXT),1)
+ifeq ($(GETTEXT),1)
 compileOptsAll += -DGETTEXT
 endif
 compileOptsRelease =
 compileOptsDebug =
-compileOpts = $(compileOptsAll) $(compileOpts$(build)) $(commonOpts) 
+compileOpts = $(compileOptsAll) $(compileOpts$(BUILD)) $(commonOpts)
 
 linkerOptsAll =
-ifeq ($(USE_GETTEXT),1)
+ifeq ($(GETTEXT),1)
 linkerOptsAll += -lgettextlib
 endif
 linkerOptsRelease =
 linkerOptsDebug =
-linkerOpts = $(commonOpts) $(linkerOptsAll) $(linkerOpts$(build))
+linkerOpts = $(commonOpts) $(linkerOptsAll) $(linkerOpts$(BUILD))
 
 compile = $(CXX) $(compileOpts)
 
-.PHONY : all clean
+.PHONY : all clean install uninstall i18n
 
-ifeq ($(USE_GETTEXT),1)
-all : onenightstand i18n/onenightstand.pot
+ifeq ($(GETTEXT),1)
+all : onenightstand i18n/onenightstand.pot i18n
 else
 all : onenightstand
 endif
@@ -39,9 +41,16 @@ endif
 clean :
 	-rm -v onenightstand $(objects) i18n/onenightstand.pot
 
+install : onenightstand
+	install -m 0755 -d $(PREFIX)/bin
+	install -m 0755 -t $(PREFIX)/bin onenightstand
+
+uninstall :
+	-rm $(PREFIX)/bin/onenightstand
+
 onenightstand : $(objects) $(libs)
 	$(CXX) -o onenightstand $(objects) $(libs) $(linkerOpts)
-ifeq ($(build),Release)
+ifeq ($(BUILD),Release)
 	strip onenightstand
 endif
 
@@ -52,7 +61,7 @@ clipp/libclipp.a :
 	make -C clipp libclipp.a
 
 main.o : main.cxx account.hxx otp.hxx
-	$(compile) -o main.o main.cxx 
+	$(compile) -o main.o main.cxx
 
 account.o : account.cxx account.hxx
 	$(compile) -o account.o account.cxx
