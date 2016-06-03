@@ -1,109 +1,145 @@
-# onenightstand German translation
-# Copyright (C) 2015
-# This file is distributed under the same license as the onenightstand package.
-# Taylor C. Richberger <taywee@gmx.com> 2015
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: 1.0\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-09 13:37-0600\n"
-"PO-Revision-Date: 2015-07-09 13:37-0600\n"
-"Last-Translator: Taylor C. Richberger <taywee@gmx.com>\n"
-"Language-Team: German\n"
+"POT-Creation-Date: 2016-06-02 19:21-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: main.cxx:275
-msgid " -s name 'Account description' TOTP 6 SHA1 30 ABCDEFGHIJ2345"
-msgstr " -s Name 'Konto Beschreibung' TOTP 6 SHA1 30 ABCDEFGHIJ2345"
-
-#: main.cxx:264
-msgid ""
-"Create or set information for one account.  Arguments are, in order, name, "
-"description, TOTP or HOTP, digits, algorithm, count or interval number, "
-"secret"
-msgstr ""
-"Erstellen oder Satzinformationen für ein Konto.  Argumente sind jeweils "
-"Name, Beschreibung, TOTP oder HOTP, Stellen, Algorithmus, Anzahl oder Intervall, "
-"Geheimnis"
-
-#: main.cxx:242 main.cxx:243
+#: main.cxx:165
 #, c-format
 msgid "Creating new account %s"
-msgstr "Erstellen neues Konto %s"
+msgstr "Neues Konto %s wird erstellt"
 
-#: main.cxx:260
-msgid "Delete accounts named by Args list."
-msgstr "Konto von Arg-Liste mit dem Namen zu löschen."
+#: main.cxx:61
+msgid "Delete accounts given as arguments"
+msgstr "Konten löschen"
 
-#: main.cxx:130 main.cxx:131
+#: main.cxx:98
 #, c-format
 msgid "Deleting account %s: %s"
-msgstr "Löschen Konto %s: %s"
+msgstr "Konto %s: %s wird gelöscht"
 
-#: main.cxx:275
-msgid "Ex:"
-msgstr "Bei:"
+#: main.cxx:59
+msgid "Display this help menu"
+msgstr "Dieses Hilfe-Menü zeigen"
 
-#: main.cxx:263
-msgid ""
-"Generate OTPs for all accounts.  If accounts are specified in arguments, "
-"only show those. (default)"
+#: main.cxx:64
+msgid "If --set is specified, all of the following must be specified"
+msgstr "Fals --set angegeben ist, alle unter auch angeben sein musst"
+
+#: main.cxx:71
+msgid "Interval (TOTP) or count number (HOTP)"
 msgstr ""
-"Generieren OTPs für alle Konten. Wenn Konten in Argumente angegeben, "
-"zeigen nur diejenigen. (Standard)"
 
-#: main.cxx:262
-msgid ""
-"List accounts and information.  List twice to also show secret pass.  If "
-"accounts are specified in arguments, only show (and increment for HOTP) "
-"those."
+#: main.cxx:62
+msgid "List accounts.  Specify twice to increase verbosity"
 msgstr ""
-"Liste Konten und Informationen. Liste zweimal, um auch zu zeigen geheime "
-"Pass ab. Wenn Konten in Argumente angegeben, nur zu zeigen (und Schrittweite "
-"für HOTP) Personen."
 
-#: main.cxx:261
-msgid "Show this help menu and exit."
-msgstr "Zeigen dieses Hilfe-Menü und beenden."
+#: main.cxx:60
+msgid "Only one of the following may be specified:"
+msgstr ""
 
-#: main.cxx:228 main.cxx:229
+#: main.cxx:63
+msgid "Print OTPs (default)"
+msgstr ""
+
+#: main.cxx:72
+msgid "Secret key"
+msgstr ""
+
+#: main.cxx:65
+msgid "Set an OTP account"
+msgstr ""
+
+#: main.cxx:68
+msgid "The account type (TOTP or HOTP)"
+msgstr ""
+
+#: main.cxx:70
+msgid "The algorithm type (md5, sha1, sha256, sha512), defaults sha1"
+msgstr ""
+
+#: main.cxx:67
+msgid "The new account description"
+msgstr ""
+
+#: main.cxx:66
+msgid "The new account name"
+msgstr ""
+
+#: main.cxx:69
+msgid "The number of digits in the OTP"
+msgstr ""
+
+#: main.cxx:58
+msgid "This program generates OTPs, particularly Google's flavor"
+msgstr ""
+
+#: main.cxx:170
 #, c-format
 msgid "Updating account %s"
-msgstr "Aktualisieren Konto %s"
+msgstr ""
 
-#: main.cxx:269
-msgid "When multiple options are listed, the latest takes precedence."
-msgstr "Wenn mehrere Optionen aufgelistet, die neueste Vorrang."
+#: main.cxx:61
+msgid "account"
+msgstr ""
 
-#: main.cxx:191
+#: main.cxx:70 main.cxx:149
 msgid "algorithm"
-msgstr "Algorithmus"
+msgstr ""
 
-#: main.cxx:192
+#: main.cxx:150
 msgid "count"
-msgstr "Anzhal"
+msgstr ""
 
-#: main.cxx:188
+#: main.cxx:67 main.cxx:146
 msgid "description"
-msgstr "Beschreibung"
+msgstr ""
 
-#: main.cxx:190
+#: main.cxx:69 main.cxx:148
 msgid "digits"
-msgstr "Stellen"
+msgstr ""
 
-#: main.cxx:192
+#: main.cxx:59
+msgid "help"
+msgstr ""
+
+#: main.cxx:71 main.cxx:150
 msgid "interval"
-msgstr "Intervall"
+msgstr ""
 
-#: main.cxx:193
+#: main.cxx:62
+msgid "list"
+msgstr ""
+
+#: main.cxx:66
+msgid "name"
+msgstr ""
+
+#: main.cxx:63
+msgid "print"
+msgstr ""
+
+#: main.cxx:72 main.cxx:153
 msgid "secret"
-msgstr "Geheimnis"
+msgstr ""
 
-#: main.cxx:189
+#: main.cxx:65
+msgid "set"
+msgstr "erstellen"
+
+#: main.cxx:68 main.cxx:147
 msgid "type"
-msgstr "Art"
+msgstr ""

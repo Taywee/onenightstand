@@ -55,21 +55,21 @@ int main(int argc, char **argv)
         {"sha256", Account::Algorithm::SHA256},
         {"sha512", Account::Algorithm::SHA512},
         {"md5", Account::Algorithm::MD5}};
-    args::ArgumentParser parser("This program generates OTPs, particularly Google's flavor");
-    args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
-    args::Group args(parser, "Only one of the following may be specified:", args::Group::Validators::AtMostOne);
-    args::ValueFlagList<std::string, std::unordered_set<std::string>> deletes(args, "account", "Delete accounts given as arguments", {'d', "delete"});
-    args::CounterFlag list(args, "list", "List accounts.  Specify twice to increase verbosity", {'l', "list"});
-    args::Flag print(args, "print", "Print OTPs (default)", {'p', "print"});
-    args::Group setgroup(args, "If --set is specified, all of the following must be specified", args::Group::Validators::All);
-    args::Flag set(setgroup, "set", "Set an OTP account", {'s', "set"});
-    args::ValueFlag<std::string> name(setgroup, "name", "The new account name", {'n', "name"});
-    args::ValueFlag<std::string> description(setgroup, "description", "The new account description", {'D', "description"});
-    args::MapFlag<std::string, Account::Type, ToLowerReader> type(setgroup, "type", "The account type (TOTP or HOTP)", {'t', "type"}, typemap);
-    args::ValueFlag<int> digits(setgroup, "digits", "The number of digits in the OTP", {'N', "digits"});
-    args::MapFlag<std::string, Account::Algorithm, ToLowerReader> algorithm(setgroup, "algorithm", "The algorithm type (md5, sha1, sha256, sha512), defaults sha1", {'a', "algorithm"}, algorithmmap);
-    args::ValueFlag<int> interval(setgroup, "interval", "Interval (TOTP) or count number (HOTP)", {'i', "interval", 'c', "count"});
-    args::ValueFlag<std::string> secret(setgroup, "secret", "Secret key", {'S', "secret"});
+    args::ArgumentParser parser(gettext("This program generates OTPs, particularly Google's flavor"));
+    args::HelpFlag help(parser, gettext("help"), gettext("Display this help menu"), {'h', "help"});
+    args::Group args(parser, gettext("Only one of the following may be specified:"), args::Group::Validators::AtMostOne);
+    args::ValueFlagList<std::string, std::unordered_set<std::string>> deletes(args, gettext("account"), gettext("Delete accounts given as arguments"), {'d', "delete"});
+    args::CounterFlag list(args, gettext("list"), gettext("List accounts.  Specify twice to increase verbosity"), {'l', "list"});
+    args::Flag print(args, gettext("print"), gettext("Print OTPs (default)"), {'p', "print"});
+    args::Group setgroup(args, gettext("If --set is specified, all of the following must be specified"), args::Group::Validators::All);
+    args::Flag set(setgroup, gettext("set"), gettext("Set an OTP account"), {'s', "set"});
+    args::ValueFlag<std::string> name(setgroup, gettext("name"), gettext("The new account name"), {'n', "name"});
+    args::ValueFlag<std::string> description(setgroup, gettext("description"), gettext("The new account description"), {'D', "description"});
+    args::MapFlag<std::string, Account::Type, ToLowerReader> type(setgroup, gettext("type"), gettext("The account type (TOTP or HOTP)"), {'t', "type"}, typemap);
+    args::ValueFlag<int> digits(setgroup, gettext("digits"), gettext("The number of digits in the OTP"), {'N', "digits"});
+    args::MapFlag<std::string, Account::Algorithm, ToLowerReader> algorithm(setgroup, gettext("algorithm"), gettext("The algorithm type (md5, sha1, sha256, sha512), defaults sha1"), {'a', "algorithm"}, algorithmmap);
+    args::ValueFlag<int> interval(setgroup, gettext("interval"), gettext("Interval (TOTP) or count number (HOTP)"), {'i', "interval", 'c', "count"});
+    args::ValueFlag<std::string> secret(setgroup, gettext("secret"), gettext("Secret key"), {'S', "secret"});
 
     try
     {
