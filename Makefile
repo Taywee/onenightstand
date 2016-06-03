@@ -3,15 +3,15 @@ CXX = clang++
 PREFIX = /usr/local
 BUILD = Release
 
-objects = main.o account.o otp.o
-libs = cryptpp/libcryptpp.a clipp/libclipp.a
+objects = main.o account.o
+libs = -lcrypto -lssl
 
 commonOptsAll = -Wall -Wextra -std=c++11 $(extraFlags)
 commonDebugOpts = -ggdb -O0 -DDEBUG
 commonReleaseOpts = -O3 -march=native
 commonOpts = $(commonOptsAll) $(common$(BUILD)Opts)
 
-compileOptsAll = -c
+compileOptsAll = -c -I cppcodec
 
 ifeq ($(GETTEXT),1)
 compileOptsAll += -DGETTEXT
@@ -60,14 +60,11 @@ cryptpp/libcryptpp.a :
 clipp/libclipp.a :
 	make -C clipp libclipp.a
 
-main.o : main.cxx account.hxx otp.hxx
+main.o : main.cxx account.hxx
 	$(compile) -o main.o main.cxx
 
 account.o : account.cxx account.hxx
 	$(compile) -o account.o account.cxx
-
-otp.o : otp.cxx otp.hxx
-	$(compile) -o otp.o otp.cxx
 
 i18n/onenightstand.pot : main.cxx
 	mkdir -p i18n

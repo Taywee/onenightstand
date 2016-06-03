@@ -1,6 +1,3 @@
-[submodule "cryptpp"]
-	path = cryptpp
-	url = git@ssh.gitgud.io:Taywee/cryptpp.git
-[submodule "clipp"]
-	path = clipp
-	url = git@ssh.gitgud.io:Taywee/clipp.git
+[submodule "cppcodec"]
+	path = cppcodec
+	url = https://github.com/tplgy/cppcodec.git

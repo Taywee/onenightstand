@@ -31,10 +31,10 @@ struct Account
     unsigned short digits;
     enum class Algorithm
     {
-        MD5,
         SHA1,
         SHA256,
-        SHA512
+        SHA512,
+        MD5
     } algorithm;
     unsigned long count;
     std::string secret;

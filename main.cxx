@@ -16,6 +16,7 @@
 #include <list>
 #include <algorithm>
 #include <unordered_set>
+#include <unordered_map>
 #include <unistd.h>
 #ifdef GETTEXT
 #include <libintl.h>
@@ -25,253 +26,167 @@
 #endif
 #include <cstdio>
 
+#include <openssl/hmac.h>
+#include <openssl/evp.h>
+
+#include <args.hxx>
+#include <cppcodec/base32_default_rfc4648.hpp>
+
 #include "account.hxx"
-#include "otp.hxx"
-#include "cryptpp/crypto.hxx"
-#include "cryptpp/coding.hxx"
-#include "clipp/table.hxx"
 
-enum class Mode
-{
-    OTP,
-    Set,
-    List,
-    Delete
-};
 
-inline void Usage(const std::string &progName);
 inline void OTP(Account &account);
 
 template <typename ...Types>
 inline std::string gettextf(const std::string &format, Types ...args);
 
+static void ToLowerReader(const std::string &name, const std::string &value, std::string &destination);
 
 int main(int argc, char **argv)
 {
     setlocale(LC_ALL,"");
     textdomain("onenightstand");
 
-    Mode mode = Mode::OTP;
+    const std::unordered_map<std::string, Account::Type> typemap{
+        {"totp", Account::Type::TOTP},
+        {"hotp", Account::Type::HOTP}};
+    const std::unordered_map<std::string, Account::Algorithm> algorithmmap{
+        {"sha1", Account::Algorithm::SHA1},
+        {"sha256", Account::Algorithm::SHA256},
+        {"sha512", Account::Algorithm::SHA512},
+        {"md5", Account::Algorithm::MD5}};
+    args::ArgumentParser parser("This program generates OTPs, particularly Google's flavor");
+    args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
+    args::Group args(parser, "Only one of the following may be specified:", args::Group::Validators::AtMostOne);
+    args::ValueFlagList<std::string, std::unordered_set<std::string>> deletes(args, "account", "Delete accounts given as arguments", {'d', "delete"});
+    args::CounterFlag list(args, "list", "List accounts.  Specify twice to increase verbosity", {'l', "list"});
+    args::Flag print(args, "print", "Print OTPs (default)", {'p', "print"});
+    args::Group setgroup(args, "If --set is specified, all of the following must be specified", args::Group::Validators::All);
+    args::Flag set(setgroup, "set", "Set an OTP account", {'s', "set"});
+    args::ValueFlag<std::string> name(setgroup, "name", "The new account name", {'n', "name"});
+    args::ValueFlag<std::string> description(setgroup, "description", "The new account description", {'D', "description"});
+    args::MapFlag<std::string, Account::Type, ToLowerReader> type(setgroup, "type", "The account type (TOTP or HOTP)", {'t', "type"}, typemap);
+    args::ValueFlag<int> digits(setgroup, "digits", "The number of digits in the OTP", {'N', "digits"});
+    args::MapFlag<std::string, Account::Algorithm, ToLowerReader> algorithm(setgroup, "algorithm", "The algorithm type (md5, sha1, sha256, sha512), defaults sha1", {'a', "algorithm"}, algorithmmap);
+    args::ValueFlag<int> interval(setgroup, "interval", "Interval (TOTP) or count number (HOTP)", {'i', "interval", 'c', "count"});
+    args::ValueFlag<std::string> secret(setgroup, "secret", "Secret key", {'S', "secret"});
 
-    int opt;
-    unsigned int listCount = 0;
-    while ((opt = getopt(argc, argv, "dhlps")) != -1)
+    try
     {
-        switch (opt)
+        parser.ParseCLI(argc, argv);
+    }
+    catch (args::Help)
+    {
+        std::cout << parser;
+        return 0;
+    }
+    catch (args::Error e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::cerr << parser;
+        return 1;
+    }
+
+    std::list<Account> accounts(GetAccounts());
+
+    if (deletes)
+    {
+        for (auto it = accounts.begin(); it != accounts.end();)
         {
-            case 'd':
-                {
-                    mode = Mode::Delete;
-                    break;
-                }
-
-            case 'h':
-                {
-                    Usage(argv[0]);
-                    return 0;
-                    break;
-                }
-
-            case 'l':
-                {
-                    ++listCount;
-                    mode = Mode::List;
-                    break;
-                }
-
-            case 'p':
-                {
-                    mode = Mode::OTP;
-                    break;
-                }
-
-            case 's':
-                {
-                    mode = Mode::Set;
-                    break;
-                }
-
-            case '?':
-                {
-                    Usage(argv[0]);
-                    return (1);
-                }
+            if (args::get(deletes).find(it->name) != args::get(deletes).end())
+            {
+                std::cout << gettextf("Deleting account %s: %s", it->name.c_str(), it->description.c_str()) << std::endl;
+                it = accounts.erase(it);
+            } else
+            {
+                ++it;
+            }
         }
     }
-
-    std::vector<std::string> arguments;
-
-    for (int i = optind; i < argc; ++i)
+    else if (list)
     {
-        arguments.emplace_back(argv[i]);
-    }
+        for (const Account &account: accounts)
+        {
+            std::cout << "### " << account.name << '\n';
+            std::string algorithm;
 
-    switch (mode)
-    {
-        case Mode::OTP:
+            switch (account.algorithm)
             {
-                std::list<Account> accounts(GetAccounts());
-                std::unordered_set<std::string> set(arguments.begin(), arguments.end());
-                for (Account &account: accounts)
-                {
-                    // If no accounts were given, or the current account is in the list of accounts given
-                    if (arguments.empty() || set.find(account.name) != set.end())
+                case Account::Algorithm::MD5:
                     {
-                        OTP(account);
-                        std::cout << std::endl;
-                    }
-                }
-                SaveAccounts(accounts);
-                break;
-            }
-
-        case Mode::Delete:
-            {
-                std::list<Account> accounts(GetAccounts());
-                std::unordered_set<std::string> set(arguments.begin(), arguments.end());
-                auto it = accounts.begin();
-                while (it != accounts.end())
-                {
-                    if (set.find(it->name) != set.end())
-                    {
-                        std::cout << gettextf("Deleting account %s: %s", it->name.c_str(), it->description.c_str()) << std::endl;
-                        it = accounts.erase(it);
-                    } else
-                    {
-                        ++it;
-                    }
-                }
-                SaveAccounts(accounts);
-                break;
-            }
-
-        case Mode::List:
-            {
-                std::list<Account> accounts(GetAccounts());
-                std::unordered_set<std::string> set(arguments.begin(), arguments.end());
-                for (const Account &account: accounts)
-                {
-                    if (arguments.empty() || set.find(account.name) != set.end())
-                    {
-                        std::string algorithm;
-
-                        switch (account.algorithm)
-                        {
-                            case Account::Algorithm::MD5:
-                                {
-                                    algorithm = "MD5";
-                                    break;
-                                }
-
-                            case Account::Algorithm::SHA1:
-                                {
-                                    algorithm = "SHA1";
-                                    break;
-                                }
-
-                            case Account::Algorithm::SHA256:
-                                {
-                                    algorithm = "SHA256";
-                                    break;
-                                }
-
-                            case Account::Algorithm::SHA512:
-                                {
-                                    algorithm = "SHA512";
-                                    break;
-                                }
-
-                            default:
-                                {
-                                    algorithm = "SHA1";
-                                    break;
-                                }
-                        }
-
-                        std::list<std::vector<std::string>> table = {
-                            {gettext("description"), account.description},
-                            {gettext("type"), account.type == Account::Type::HOTP ? "HOTP" : "TOTP"},
-                            {gettext("digits"), std::to_string(account.digits)},
-                            {gettext("algorithm"), algorithm},
-                            {account.type == Account::Type::HOTP ? gettext("count") : gettext("interval"), std::to_string(account.count)},
-                            {gettext("secret"), account.secret}};
-
-                        const std::vector<unsigned int> lengths = {22, 50};
-
-                        if (listCount < 2)
-                        {
-                            table.pop_back();
-                        }
-                        for (const std::vector<std::string> &item: table)
-                        {
-                            std::cout << Table::Row(item, lengths, "", "", "") << '\n';
-                        }
-                    }
-                }
-                break;
-            }
-
-        case Mode::Set:
-            {
-                if (arguments.size() != 7)
-                {
-                    Usage(argv[0]);
-                    return 1;
-                }
-
-                std::list<Account> accounts(GetAccounts());
-                Account newAccount(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
-
-                bool found = false;
-                for (auto it = accounts.begin(); it != accounts.end(); ++it)
-                {
-                    if (it->name == newAccount.name)
-                    {
-                        std::cout << gettextf("Updating account %s", newAccount.name.c_str()) << std::endl;
-
-                        *it = newAccount;
-                        found = true;
+                        algorithm = "MD5";
                         break;
                     }
-                }
-                if (!found)
-                {
-                    std::cout << gettextf("Creating new account %s", newAccount.name.c_str()) << std::endl;
 
-                    accounts.emplace_back(newAccount);
-                }
-                SaveAccounts(accounts);
-                break;
+                case Account::Algorithm::SHA1:
+                    {
+                        algorithm = "SHA1";
+                        break;
+                    }
+
+                case Account::Algorithm::SHA256:
+                    {
+                        algorithm = "SHA256";
+                        break;
+                    }
+
+                case Account::Algorithm::SHA512:
+                    {
+                        algorithm = "SHA512";
+                        break;
+                    }
+
+                default:
+                    {
+                        algorithm = "SHA1";
+                        break;
+                    }
             }
+
+            std::cout << gettext("description") << ":\n    " << account.description << '\n'
+                << gettext("type") << ":\n    " << (account.type == Account::Type::HOTP ? "HOTP" : "TOTP") << '\n'
+                << gettext("digits") << ":\n    " << std::to_string(account.digits) << '\n'
+                << gettext("algorithm") << ":\n    " << algorithm << '\n'
+                << (account.type == Account::Type::HOTP ? gettext("count") : gettext("interval")) << ":\n    " << account.count << '\n';
+            if (args::get(list) > 1)
+            {
+                std::cout << gettext("secret") << ":\n    " << account.secret << '\n';
+            }
+            std::cout << "==================" << std::endl;
+        }
     }
+    else if (setgroup)
+    {
+        const Account newAccount(args::get(name), args::get(description), args::get(type), args::get(digits), args::get(algorithm), args::get(interval), args::get(secret));
+
+        auto it = std::find_if(std::begin(accounts), std::end(accounts), [&newAccount](const Account &a) -> bool { return a.name == newAccount.name; });
+        if (it == std::end(accounts))
+        {
+            std::cout << gettextf("Creating new account %s", newAccount.name.c_str()) << std::endl;
+
+            accounts.emplace_back(newAccount);
+        } else
+        {
+            std::cout << gettextf("Updating account %s", newAccount.name.c_str()) << std::endl;
+
+            *it = newAccount;
+        }
+    } else
+    {
+        for (Account &account: accounts)
+        {
+            OTP(account);
+            std::cout << std::endl;
+        }
+    }
+    SaveAccounts(accounts);
 
     return 0;
 }
 
-void Usage(const std::string &progName)
-{
-    const std::list<std::vector<std::string>> options = {
-        {"", "-d", gettext("Delete accounts named by Args list.")},
-        {"", "-h", gettext("Show this help menu and exit.")},
-        {"", "-l", gettext("List accounts and information.  List twice to also show secret pass.  If accounts are specified in arguments, only show (and increment for HOTP) those.")},
-        {"", "-p", gettext("Generate OTPs for all accounts.  If accounts are specified in arguments, only show those. (default)")},
-        {"", "-s", gettext("Create or set information for one account.  Arguments are, in order, name, description, TOTP or HOTP, digits, algorithm, count or interval number, secret")}};
-    const std::vector<unsigned int> lengths = {8, 8, 56};
-
-    std::cout << "USAGE:" << '\n'
-              << "\t" << progName << " [-d] [-h] [-l[l]] [-p] [-s] [ Args... ]" << '\n'
-              << "\t" << gettext("When multiple options are listed, the latest takes precedence.") << '\n'
-              << '\n';
-    for (const std::vector<std::string> &option: options)
-    {
-        std::cout << Table::Row(option, lengths, "", "", "") << '\n';
-    }
-    std::cout << "\n\t\t" << gettext("Ex:") << '\t' << progName << gettext(" -s name 'Account description' TOTP 6 SHA1 30 ABCDEFGHIJ2345") << '\n';
-}
-
 void OTP(Account &account)
 {
-    time_t time = std::chrono::duration_cast<std::chrono::duration<time_t, std::ratio<1, 1>>>(std::chrono::system_clock::now().time_since_epoch()).count();
+    const time_t time = std::chrono::duration_cast<std::chrono::duration<time_t, std::ratio<1, 1>>>(std::chrono::system_clock::now().time_since_epoch()).count();
 
     std::cout << account.name << ":  " << account.description << '\n';
 
@@ -283,10 +198,34 @@ void OTP(Account &account)
         std::cout << std::setw(4) << account.count << ": ";
     }
 
-    const std::string secret(Base32::IterDecode(account.secret.begin(), account.secret.end()));
+    const uint64_t rmessage = (account.type == Account::Type::TOTP ? time / account.count : account.count);
+    const std::vector<unsigned char> secret{base32::decode(account.secret)};
+    std::stringstream value;
+    for (unsigned int i = 0; i < 8; ++i)
+    {
+        value.put(static_cast<char>(rmessage >> ((7 - i) * 8)));
+    }
+    const std::string smessage{value.str()};
+    const std::vector<unsigned char> message(std::begin(smessage), std::end(smessage));
 
-    std::cout << PWGen(Sha1::Sum, Sha1::BlockSize, account.type == Account::Type::TOTP, account.count, account.digits, secret, time);
-    std::cout << std::endl;
+    std::array<unsigned char, 20> digest;
+    unsigned int dummy = digest.size();
+    HMAC(EVP_sha1(), secret.data(), secret.size(), message.data(), message.size(), digest.data(), &dummy);
+
+    const uint8_t offset = digest.back() & 0x0F;
+
+    uint32_t truncatedHash = 0;
+
+    for (unsigned int i = 0; i < 4; ++i)
+    {
+        truncatedHash |= static_cast<unsigned char>(digest[i + offset]) << (24 - (i * 8));
+    }
+    truncatedHash &= 0x7FFFFFFF;
+
+    std::ostringstream output;
+    output <<  std::setfill('0') << std::setw(account.digits) << truncatedHash % static_cast<unsigned long>(pow(10, account.digits));
+    std::cout << output.str() << std::endl;
+
     if (account.type == Account::Type::HOTP)
     {
         ++account.count;
@@ -299,12 +238,18 @@ std::string gettextf(const std::string &format, Types ...args)
     const char *translated = gettext(format.c_str());
 
     std::vector<char> buffer;
-    buffer.resize(snprintf(NULL, 0, translated, args...));
+    buffer.resize(snprintf(NULL, 0, translated, args...) + 1);
     snprintf(buffer.data(), buffer.size(), translated, args...);
-    if (buffer.back() == '\0')
+    while (buffer.back() == '\0')
     {
         buffer.pop_back();
     }
 
     return std::string(buffer.data(), buffer.size());
+}
+
+void ToLowerReader(const std::string &name, const std::string &value, std::string &destination)
+{
+    destination = value;
+    std::transform(destination.begin(), destination.end(), destination.begin(), ::tolower);
 }
