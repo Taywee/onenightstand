@@ -40,7 +40,7 @@ struct Account
     std::string secret;
 
     Account(const std::string &name, const std::string &description, const Type type, const unsigned short digits, const Algorithm algorithm, const unsigned int count, const std::string &secret);
-    Account(const std::string &name, const std::string &description, const std::string &type, const std::string &digits, const std::string &algorithm, const std::string &count, const std::string &secret);
+    Account(const std::string &name, const std::string &description, const std::string &type, const unsigned short digits, const std::string &algorithm, const unsigned int count, const std::string &secret);
 };
 
 std::list<Account> GetAccounts();

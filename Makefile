@@ -4,14 +4,16 @@ PREFIX = /usr/local
 BUILD = Release
 
 objects = main.o account.o
-libs = -lcrypto -lssl
+libs = -lcrypto -lssl -ljson-c
 
 commonOptsAll = -Wall -Wextra -std=c++11 $(extraFlags)
 commonDebugOpts = -ggdb -O0 -DDEBUG
 commonReleaseOpts = -O3 -march=native
 commonOpts = $(commonOptsAll) $(common$(BUILD)Opts)
 
-compileOptsAll = -c -I cppcodec
+compileOptsAll = -c -Icppcodec -Iargs
+
+GETTEXT ?= 1
 
 ifeq ($(GETTEXT),1)
 compileOptsAll += -DGETTEXT
