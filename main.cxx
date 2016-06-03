@@ -61,19 +61,129 @@ int main(int argc, char **argv)
     args::ValueFlagList<std::string, std::unordered_set<std::string>> deletes(args, gettext("account"), gettext("Delete accounts given as arguments"), {'d', "delete"});
     args::CounterFlag list(args, gettext("list"), gettext("List accounts.  Specify twice to increase verbosity"), {'l', "list"});
     args::Flag print(args, gettext("print"), gettext("Print OTPs (default)"), {'p', "print"});
-    args::Group setgroup(args, gettext("If --set is specified, all of the following must be specified"), args::Group::Validators::All);
-    args::Flag set(setgroup, gettext("set"), gettext("Set an OTP account"), {'s', "set"});
-    args::ValueFlag<std::string> name(setgroup, gettext("name"), gettext("The new account name"), {'n', "name"});
+    args::ValueFlag<std::string> set(args, gettext("name"), gettext("Set an OTP account"), {'s', "set"});
+    args::Group dontcare(parser);
+    args::Group setgroup(dontcare, gettext("If --set is specified for a new account, all of the following must be specified"), args::Group::Validators::All);
     args::ValueFlag<std::string> description(setgroup, gettext("description"), gettext("The new account description"), {'D', "description"});
     args::MapFlag<std::string, Account::Type, ToLowerReader> type(setgroup, gettext("type"), gettext("The account type (TOTP or HOTP)"), {'t', "type"}, typemap);
-    args::ValueFlag<int> digits(setgroup, gettext("digits"), gettext("The number of digits in the OTP"), {'N', "digits"});
+    args::ValueFlag<int> digits(setgroup, gettext("digits"), gettext("The number of digits in the OTP"), {'n', "digits"});
     args::MapFlag<std::string, Account::Algorithm, ToLowerReader> algorithm(setgroup, gettext("algorithm"), gettext("The algorithm type (md5, sha1, sha256, sha512), defaults sha1"), {'a', "algorithm"}, algorithmmap);
-    args::ValueFlag<int> interval(setgroup, gettext("interval"), gettext("Interval (TOTP) or count number (HOTP)"), {'i', "interval", 'c', "count"});
+    args::ValueFlag<int> count(setgroup, gettext("count"), gettext("Interval (TOTP) or count number (HOTP)"), {'i', "interval", 'c', "count"});
     args::ValueFlag<std::string> secret(setgroup, gettext("secret"), gettext("Secret key"), {'S', "secret"});
 
     try
     {
         parser.ParseCLI(argc, argv);
+
+        std::list<Account> accounts(GetAccounts());
+
+        if (deletes)
+        {
+            for (auto it = accounts.begin(); it != accounts.end();)
+            {
+                if (args::get(deletes).find(it->name) != args::get(deletes).end())
+                {
+                    std::cout << gettextf("Deleting account %s: %s", it->name.c_str(), it->description.c_str()) << std::endl;
+                    it = accounts.erase(it);
+                } else
+                {
+                    ++it;
+                }
+            }
+            SaveAccounts(accounts);
+        }
+        else if (list)
+        {
+            for (const Account &account: accounts)
+            {
+                std::cout << "### " << account.name << '\n';
+                std::string algorithm;
+
+                switch (account.algorithm)
+                {
+                    case Account::Algorithm::MD5:
+                        {
+                            algorithm = "MD5";
+                            break;
+                        }
+
+                    case Account::Algorithm::SHA1:
+                        {
+                            algorithm = "SHA1";
+                            break;
+                        }
+
+                    case Account::Algorithm::SHA256:
+                        {
+                            algorithm = "SHA256";
+                            break;
+                        }
+
+                    case Account::Algorithm::SHA512:
+                        {
+                            algorithm = "SHA512";
+                            break;
+                        }
+
+                    default:
+                        {
+                            algorithm = "SHA1";
+                            break;
+                        }
+                }
+
+                std::cout << gettext("description") << ":\n    " << account.description << '\n'
+                    << gettext("type") << ":\n    " << (account.type == Account::Type::HOTP ? "HOTP" : "TOTP") << '\n'
+                    << gettext("digits") << ":\n    " << std::to_string(account.digits) << '\n'
+                    << gettext("algorithm") << ":\n    " << algorithm << '\n'
+                    << (account.type == Account::Type::HOTP ? gettext("count") : gettext("interval")) << ":\n    " << account.count << '\n';
+                if (args::get(list) > 1)
+                {
+                    std::cout << gettext("secret") << ":\n    " << account.secret << '\n';
+                }
+                std::cout << "==================" << std::endl;
+            }
+        }
+        else if (set)
+        {
+            auto it = std::find_if(std::begin(accounts), std::end(accounts), [&set](const Account &a) -> bool { return a.name == args::get(set); });
+            if (it == std::end(accounts))
+            {
+                if (!setgroup)
+                    throw args::Error("When trying to --set a new account, all of the set options are mandatory");
+                const Account newAccount(args::get(set), args::get(description), args::get(type), args::get(digits), args::get(algorithm), args::get(count), args::get(secret));
+                std::cout << gettextf("Creating new account %s", args::get(set).c_str()) << std::endl;
+
+                accounts.emplace_back(newAccount);
+            } else
+            {
+                std::cout << gettextf("Updating account %s", args::get(set).c_str()) << std::endl;
+
+                Account &account = *it;
+                if (description)
+                    account.description = args::get(description);
+                if (type)
+                    account.type = args::get(type);
+                if (digits)
+                    account.digits = args::get(digits);
+                if (algorithm)
+                    account.algorithm = args::get(algorithm);
+                if (count)
+                    account.count = args::get(count);
+                if (secret)
+                    account.secret = args::get(secret);
+            }
+            SaveAccounts(accounts);
+        } else
+        {
+            for (Account &account: accounts)
+            {
+                OTP(account);
+                std::cout << std::endl;
+            }
+        }
+
+        return 0;
     }
     catch (args::Help)
     {
@@ -86,102 +196,6 @@ int main(int argc, char **argv)
         std::cerr << parser;
         return 1;
     }
-
-    std::list<Account> accounts(GetAccounts());
-
-    if (deletes)
-    {
-        for (auto it = accounts.begin(); it != accounts.end();)
-        {
-            if (args::get(deletes).find(it->name) != args::get(deletes).end())
-            {
-                std::cout << gettextf("Deleting account %s: %s", it->name.c_str(), it->description.c_str()) << std::endl;
-                it = accounts.erase(it);
-            } else
-            {
-                ++it;
-            }
-        }
-    }
-    else if (list)
-    {
-        for (const Account &account: accounts)
-        {
-            std::cout << "### " << account.name << '\n';
-            std::string algorithm;
-
-            switch (account.algorithm)
-            {
-                case Account::Algorithm::MD5:
-                    {
-                        algorithm = "MD5";
-                        break;
-                    }
-
-                case Account::Algorithm::SHA1:
-                    {
-                        algorithm = "SHA1";
-                        break;
-                    }
-
-                case Account::Algorithm::SHA256:
-                    {
-                        algorithm = "SHA256";
-                        break;
-                    }
-
-                case Account::Algorithm::SHA512:
-                    {
-                        algorithm = "SHA512";
-                        break;
-                    }
-
-                default:
-                    {
-                        algorithm = "SHA1";
-                        break;
-                    }
-            }
-
-            std::cout << gettext("description") << ":\n    " << account.description << '\n'
-                << gettext("type") << ":\n    " << (account.type == Account::Type::HOTP ? "HOTP" : "TOTP") << '\n'
-                << gettext("digits") << ":\n    " << std::to_string(account.digits) << '\n'
-                << gettext("algorithm") << ":\n    " << algorithm << '\n'
-                << (account.type == Account::Type::HOTP ? gettext("count") : gettext("interval")) << ":\n    " << account.count << '\n';
-            if (args::get(list) > 1)
-            {
-                std::cout << gettext("secret") << ":\n    " << account.secret << '\n';
-            }
-            std::cout << "==================" << std::endl;
-        }
-    }
-    else if (setgroup)
-    {
-        const Account newAccount(args::get(name), args::get(description), args::get(type), args::get(digits), args::get(algorithm), args::get(interval), args::get(secret));
-
-        auto it = std::find_if(std::begin(accounts), std::end(accounts), [&newAccount](const Account &a) -> bool { return a.name == newAccount.name; });
-        if (it == std::end(accounts))
-        {
-            std::cout << gettextf("Creating new account %s", newAccount.name.c_str()) << std::endl;
-
-            accounts.emplace_back(newAccount);
-        } else
-        {
-            std::cout << gettextf("Updating account %s", newAccount.name.c_str()) << std::endl;
-
-            *it = newAccount;
-        }
-    } else
-    {
-        for (Account &account: accounts)
-        {
-            OTP(account);
-            std::cout << std::endl;
-        }
-    }
-    SaveAccounts(accounts);
-
-    return 0;
 }
 
 void OTP(Account &account)
