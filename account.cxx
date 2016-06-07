@@ -179,7 +179,7 @@ void SaveAccounts(const std::list<Account> &accounts)
             json_object_object_add(jaccount, "secret", json_object_new_string_len(account.secret.data(), account.secret.size()));
             json_object_array_add(jaccounts, jaccount);
         }
-        const std::string json(json_object_to_json_string_ext(jaccounts, JSON_C_TO_STRING_PRETTY));
+        const std::string json(json_object_to_json_string_ext(jaccounts, JSON_C_TO_STRING_PLAIN));
         file << json << '\n';
         json_object_put(jaccounts);
     }
