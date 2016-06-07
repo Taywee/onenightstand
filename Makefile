@@ -45,6 +45,7 @@ clean :
 
 install : onenightstand
 	install -m 0755 -d $(PREFIX)/bin
+	strip onenightstand
 	install -m 0755 -t $(PREFIX)/bin onenightstand
 
 uninstall :
@@ -52,9 +53,6 @@ uninstall :
 
 onenightstand : $(objects) $(libs)
 	$(CXX) -o onenightstand $(objects) $(libs) $(linkerOpts)
-ifeq ($(BUILD),Release)
-	strip onenightstand
-endif
 
 cryptpp/libcryptpp.a :
 	make -C cryptpp libcryptpp.a

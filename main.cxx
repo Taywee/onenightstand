@@ -9,14 +9,17 @@
 
     The entire text of the license is contained in LICENSE
 */
-#include <iostream>
-#include <iomanip>
-#include <vector>
-#include <chrono>
-#include <list>
 #include <algorithm>
-#include <unordered_set>
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <iterator>
+#include <list>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
+#include <cstdio>
+
 #include <unistd.h>
 #ifdef GETTEXT
 #include <libintl.h>
@@ -24,7 +27,6 @@
 #define gettext(x) x
 #define textdomain(x)
 #endif
-#include <cstdio>
 
 #include <openssl/hmac.h>
 #include <openssl/evp.h>
@@ -33,7 +35,6 @@
 #include <cppcodec/base32_default_rfc4648.hpp>
 
 #include "account.hxx"
-
 
 inline void OTP(Account &account);
 
@@ -176,10 +177,10 @@ int main(int argc, char **argv)
             SaveAccounts(accounts);
         } else
         {
-            for (Account &account: accounts)
+            if (!accounts.empty())
             {
-                OTP(account);
-                std::cout << std::endl;
+                std::for_each(accounts.begin(), --(accounts.end()), [](Account &account){OTP(account); std::cout << std::endl;});
+                OTP(accounts.back());
             }
         }
 
