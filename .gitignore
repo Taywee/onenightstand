@@ -26,6 +26,9 @@
 *.exe
 *.out
 *.app
+*.ninja
+.ninja_*
+*-prefix
 onenightstand
 
 # Temp files
@@ -34,6 +37,8 @@ onenightstand
 
 # Compiled translation files
 *.mo
+*_pb2.py
+*.pb.*
 
 # extracted strings
 i18n/onenightstand.pot

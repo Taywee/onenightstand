@@ -1,0 +1,29 @@
+/* Copyright © 2016 Taylor C. Richberger <taywee@gmx.com>
+ * This code is released under the license described in the LICENSE file
+ */
+
+syntax = "proto3";
+
+message Account {
+    string name = 1;
+    string description = 2;
+    enum Type {
+        TOTP = 0;
+        HOTP = 1;
+    }
+    Type type = 3;
+    uint32 digits = 4;
+    enum Algorithm {
+        SHA1 = 0;
+        SHA256 = 1;
+        SHA512 = 2;
+        MD5 = 3;
+    }
+    Algorithm algorithm = 5;
+    uint32 count = 6;
+    string secret = 7;
+}
+
+message Accounts {
+    repeated Account account = 1;
+}

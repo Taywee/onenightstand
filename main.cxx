@@ -11,6 +11,7 @@
 */
 #include <algorithm>
 #include <chrono>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -21,6 +22,9 @@
 #include <cstdio>
 
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <pwd.h>
 #ifdef GETTEXT
 #include <libintl.h>
 #else
@@ -34,7 +38,7 @@
 #include <args.hxx>
 #include <cppcodec/base32_default_rfc4648.hpp>
 
-#include "account.hxx"
+#include "account.pb.h"
 
 inline void OTP(Account &account);
 
@@ -43,19 +47,23 @@ inline std::string gettextf(const std::string &format, Types ...args);
 
 static void ToLowerReader(const std::string &name, const std::string &value, std::string &destination);
 
+static const std::string GetAccountFile();
+static Accounts GetAccounts();
+static void SaveAccounts(const Accounts &accounts);
+
 int main(int argc, char **argv)
 {
     setlocale(LC_ALL,"");
     textdomain("onenightstand");
 
     const std::unordered_map<std::string, Account::Type> typemap{
-        {"totp", Account::Type::TOTP},
-        {"hotp", Account::Type::HOTP}};
+        {"totp", Account::TOTP},
+        {"hotp", Account::HOTP}};
     const std::unordered_map<std::string, Account::Algorithm> algorithmmap{
-        {"sha1", Account::Algorithm::SHA1},
-        {"sha256", Account::Algorithm::SHA256},
-        {"sha512", Account::Algorithm::SHA512},
-        {"md5", Account::Algorithm::MD5}};
+        {"sha1", Account::SHA1},
+        {"sha256", Account::SHA256},
+        {"sha512", Account::SHA512},
+        {"md5", Account::MD5}};
     args::ArgumentParser parser(gettext("This program generates OTPs, particularly Google's flavor"));
     args::HelpFlag help(parser, gettext("help"), gettext("Display this help menu"), {'h', "help"});
     args::Group args(parser, gettext("Only one of the following may be specified:"), args::Group::Validators::AtMostOne);
@@ -76,51 +84,48 @@ int main(int argc, char **argv)
     {
         parser.ParseCLI(argc, argv);
 
-        std::list<Account> accounts(GetAccounts());
+        Accounts accounts = GetAccounts();
 
         if (deletes)
         {
-            for (auto it = accounts.begin(); it != accounts.end();)
+            // Move erasure to the end
+            std::remove_reference<decltype(accounts.account())>::type::const_iterator it = std::remove_if(std::begin(*accounts.mutable_account()), std::end(*accounts.mutable_account()), [&deletes](const Account &account) -> bool { return (args::get(deletes).find(account.name()) != args::get(deletes).end()); });
+            // Print the massage
+            for (auto jt = it; jt != accounts.account().end(); ++jt)
             {
-                if (args::get(deletes).find(it->name) != args::get(deletes).end())
-                {
-                    std::cout << gettextf("Deleting account %s: %s", it->name.c_str(), it->description.c_str()) << std::endl;
-                    it = accounts.erase(it);
-                } else
-                {
-                    ++it;
-                }
+                    std::cout << gettextf("Deleting account %s: %s", jt->name().c_str(), jt->description().c_str()) << std::endl;
             }
+            accounts.mutable_account()->erase(it, accounts.account().end());
             SaveAccounts(accounts);
         }
         else if (list)
         {
-            for (const Account &account: accounts)
+            for (const Account &account: accounts.account())
             {
-                std::cout << "### " << account.name << '\n';
+                std::cout << "### " << account.name() << '\n';
                 std::string algorithm;
 
-                switch (account.algorithm)
+                switch (account.algorithm())
                 {
-                    case Account::Algorithm::MD5:
+                    case Account::MD5:
                         {
                             algorithm = "MD5";
                             break;
                         }
 
-                    case Account::Algorithm::SHA1:
+                    case Account::SHA1:
                         {
                             algorithm = "SHA1";
                             break;
                         }
 
-                    case Account::Algorithm::SHA256:
+                    case Account::SHA256:
                         {
                             algorithm = "SHA256";
                             break;
                         }
 
-                    case Account::Algorithm::SHA512:
+                    case Account::SHA512:
                         {
                             algorithm = "SHA512";
                             break;
@@ -133,54 +138,60 @@ int main(int argc, char **argv)
                         }
                 }
 
-                std::cout << gettext("description") << ":\n    " << account.description << '\n'
-                    << gettext("type") << ":\n    " << (account.type == Account::Type::HOTP ? "HOTP" : "TOTP") << '\n'
-                    << gettext("digits") << ":\n    " << std::to_string(account.digits) << '\n'
+                std::cout << gettext("description") << ":\n    " << account.description() << '\n'
+                    << gettext("type") << ":\n    " << (account.type() == Account::HOTP ? "HOTP" : "TOTP") << '\n'
+                    << gettext("digits") << ":\n    " << account.digits() << '\n'
                     << gettext("algorithm") << ":\n    " << algorithm << '\n'
-                    << (account.type == Account::Type::HOTP ? gettext("count") : gettext("interval")) << ":\n    " << account.count << '\n';
+                    << (account.type() == Account::HOTP ? gettext("count") : gettext("interval")) << ":\n    " << account.count() << '\n';
                 if (args::get(list) > 1)
                 {
-                    std::cout << gettext("secret") << ":\n    " << account.secret << '\n';
+                    std::cout << gettext("secret") << ":\n    " << account.secret() << '\n';
                 }
                 std::cout << "==================" << std::endl;
             }
         }
         else if (set)
         {
-            auto it = std::find_if(std::begin(accounts), std::end(accounts), [&set](const Account &a) -> bool { return a.name == args::get(set); });
-            if (it == std::end(accounts))
+            auto it = std::find_if(std::begin(*accounts.mutable_account()), std::end(*accounts.mutable_account()), [&set](const Account &a) -> bool { return a.name() == args::get(set); });
+            if (it == std::end(*accounts.mutable_account()))
             {
                 if (!setgroup)
                     throw args::Error("When trying to --set a new account, all of the set options are mandatory");
-                const Account newAccount(args::get(set), args::get(description), args::get(type), args::get(digits), args::get(algorithm), args::get(count), args::get(secret));
                 std::cout << gettextf("Creating new account %s", args::get(set).c_str()) << std::endl;
 
-                accounts.emplace_back(newAccount);
+                Account &newAccount = *accounts.add_account();
+                newAccount.set_name(args::get(set));
+                newAccount.set_description(args::get(description));
+                newAccount.set_type(args::get(type));
+                newAccount.set_digits(args::get(digits));
+                newAccount.set_algorithm(args::get(algorithm));
+                newAccount.set_count(args::get(count));
+                newAccount.set_secret(args::get(secret));
             } else
             {
                 std::cout << gettextf("Updating account %s", args::get(set).c_str()) << std::endl;
 
                 Account &account = *it;
                 if (description)
-                    account.description = args::get(description);
+                    account.set_description(args::get(description));
                 if (type)
-                    account.type = args::get(type);
+                    account.set_type(args::get(type));
                 if (digits)
-                    account.digits = args::get(digits);
+                    account.set_digits(args::get(digits));
                 if (algorithm)
-                    account.algorithm = args::get(algorithm);
+                    account.set_algorithm(args::get(algorithm));
                 if (count)
-                    account.count = args::get(count);
+                    account.set_count(args::get(count));
                 if (secret)
-                    account.secret = args::get(secret);
+                    account.set_secret(args::get(secret));
             }
             SaveAccounts(accounts);
         } else
         {
-            if (!accounts.empty())
+            if (accounts.account_size() > 0)
             {
-                std::for_each(accounts.begin(), --(accounts.end()), [](Account &account){OTP(account); std::cout << std::endl;});
-                OTP(accounts.back());
+                std::for_each(std::begin(*accounts.mutable_account()), --(accounts.mutable_account()->end()), [](Account &account){OTP(account); std::cout << std::endl;});
+                OTP(*(--(accounts.mutable_account()->end())));
             }
         }
 
@@ -203,18 +214,18 @@ void OTP(Account &account)
 {
     const time_t time = std::chrono::duration_cast<std::chrono::duration<time_t, std::ratio<1, 1>>>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-    std::cout << account.name << ":  " << account.description << '\n';
+    std::cout << account.name() << ":  " << account.description() << '\n';
 
-    if (account.type == Account::Type::TOTP)
+    if (account.type() == Account::TOTP)
     {
-        std::cout << std::setw(4) << account.count - (time % account.count) << ": ";
+        std::cout << std::setw(6) << account.count() - (time % account.count()) << ": ";
     } else
     {
-        std::cout << std::setw(4) << account.count << ": ";
+        std::cout << std::setw(6) << account.count() << ": ";
     }
 
-    const uint64_t rmessage = (account.type == Account::Type::TOTP ? time / account.count : account.count);
-    const std::vector<unsigned char> secret{base32::decode(account.secret)};
+    const uint64_t rmessage = (account.type() == Account::TOTP ? time / account.count() : account.count());
+    const std::vector<unsigned char> secret{base32::decode(account.secret())};
     std::stringstream value;
     for (unsigned int i = 0; i < 8; ++i)
     {
@@ -223,27 +234,58 @@ void OTP(Account &account)
     const std::string smessage{value.str()};
     const std::vector<unsigned char> message(std::begin(smessage), std::end(smessage));
 
-    std::array<unsigned char, 20> digest;
-    unsigned int dummy = digest.size();
-    HMAC(EVP_sha1(), secret.data(), secret.size(), message.data(), message.size(), digest.data(), &dummy);
+    std::vector<unsigned char> digest;
+    const EVP_MD *evp;
+    switch (account.algorithm())
+    {
+        case Account::MD5:
+            {
+                evp = EVP_md5();
+                break;
+            }
+
+        case Account::SHA1:
+            {
+                evp = EVP_sha1();
+                break;
+            }
+
+        case Account::SHA256:
+            {
+                evp = EVP_sha256();
+                break;
+            }
+
+        case Account::SHA512:
+            {
+                evp = EVP_sha512();
+                break;
+            }
+
+        default:
+            {
+                evp = EVP_sha1();
+                break;
+            }
+    }
+    digest.resize(EVP_MD_size(evp));
+    HMAC(evp, secret.data(), secret.size(), message.data(), message.size(), digest.data(), nullptr);
 
     const uint8_t offset = digest.back() & 0x0F;
 
-    uint32_t truncatedHash = 0;
-
-    for (unsigned int i = 0; i < 4; ++i)
-    {
-        truncatedHash |= static_cast<unsigned char>(digest[i + offset]) << (24 - (i * 8));
-    }
-    truncatedHash &= 0x7FFFFFFF;
+    const uint32_t truncatedHash = 
+        ((digest[offset] & 0x7f) << 24) |
+        ((digest[offset + 1] & 0xff) << 16) |
+        ((digest[offset + 2] & 0xff) << 8) |
+        (digest[offset + 3] & 0xff);
 
     std::ostringstream output;
-    output <<  std::setfill('0') << std::setw(account.digits) << truncatedHash % static_cast<unsigned long>(pow(10, account.digits));
+    output <<  std::setfill('0') << std::setw(account.digits()) << truncatedHash % static_cast<unsigned long>(pow(10, account.digits()));
     std::cout << output.str() << std::endl;
 
-    if (account.type == Account::Type::HOTP)
+    if (account.type() == Account::HOTP)
     {
-        ++account.count;
+        account.set_count(account.count() + 1);
     }
 }
 
@@ -267,4 +309,78 @@ void ToLowerReader(const std::string &name, const std::string &value, std::strin
 {
     destination = value;
     std::transform(destination.begin(), destination.end(), destination.begin(), ::tolower);
+}
+
+static bool makepath(const std::string &path, const mode_t mode = S_IRWXU)
+{
+    std::string::size_type pos = path.find('/');
+    while (pos != path.npos)
+    {
+        if (pos != 0)
+        {
+            if (mkdir(path.substr(0, pos).c_str(), mode) == -1)
+            {
+                if (errno != EEXIST)
+                {
+                    return false;
+                }
+            }
+        }
+        pos = path.find('/', pos + 1);
+    }
+    if (mkdir(path.c_str(), mode) == -1)
+    {
+        if (errno != EEXIST)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+static const std::string GetAccountFile()
+{
+    const char * const datahome = getenv("XDG_DATA_HOME");
+    std::string home;
+    if (datahome)
+    {
+        home.assign(datahome);
+    } else
+    {
+        const char * const homeenv = getenv("HOME");
+        if (homeenv)
+        {
+            home.assign(homeenv);
+        } else
+        {
+            const struct passwd *const pw = getpwuid(getuid());
+
+            home.assign(pw->pw_dir);
+        }
+        home.append("/.local/share");
+        if (!makepath(home))
+        {
+            std::ostringstream problem;
+
+            problem << "Could not create directory \"" << home << '"';
+            throw std::runtime_error(problem.str());
+        }
+    }
+    return home + "/onenightstand.dat";
+}
+
+static Accounts GetAccounts()
+{
+    Accounts accounts;
+    const std::string accountsFile(GetAccountFile());
+    std::ifstream file(accountsFile, std::ios_base::binary);
+    accounts.ParseFromIstream(&file);
+    return accounts;
+}
+
+static void SaveAccounts(const Accounts &accounts)
+{
+    const std::string accountsFile(GetAccountFile());
+    std::ofstream file(accountsFile, std::ios_base::binary);
+    accounts.SerializeToOstream(&file);
 }
