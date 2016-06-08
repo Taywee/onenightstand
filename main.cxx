@@ -193,6 +193,7 @@ int main(int argc, char **argv)
                 std::for_each(std::begin(*accounts.mutable_account()), --(accounts.mutable_account()->end()), [](Account &account){OTP(account); std::cout << std::endl;});
                 OTP(*(--(accounts.mutable_account()->end())));
             }
+            SaveAccounts(accounts);
         }
 
         return 0;
