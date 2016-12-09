@@ -45,7 +45,10 @@ inline void OTP(Account &account);
 template <typename ...Types>
 inline std::string gettextf(const std::string &format, Types ...args);
 
-static void ToLowerReader(const std::string &name, const std::string &value, std::string &destination);
+class ToLowerReader { 
+    public:
+        void operator()(const std::string &name, const std::string &value, std::string &destination);
+};
 
 static const std::string GetAccountFile();
 static Accounts GetAccounts();
@@ -67,7 +70,7 @@ int main(int argc, char **argv)
     args::ArgumentParser parser(gettext("This program generates OTPs, particularly Google's flavor"));
     args::HelpFlag help(parser, gettext("help"), gettext("Display this help menu"), {'h', "help"});
     args::Group args(parser, gettext("Only one of the following may be specified:"), args::Group::Validators::AtMostOne);
-    args::ValueFlagList<std::string, std::unordered_set<std::string>> deletes(args, gettext("account"), gettext("Delete accounts given as arguments"), {'d', "delete"});
+    args::ValueFlagList<std::string, std::unordered_set> deletes(args, gettext("account"), gettext("Delete accounts given as arguments"), {'d', "delete"});
     args::CounterFlag list(args, gettext("list"), gettext("List accounts.  Specify twice to increase verbosity"), {'l', "list"});
     args::Flag print(args, gettext("print"), gettext("Print OTPs (default)"), {'p', "print"});
     args::ValueFlag<std::string> set(args, gettext("name"), gettext("Set an OTP account"), {'s', "set"});
@@ -306,7 +309,7 @@ std::string gettextf(const std::string &format, Types ...args)
     return std::string(buffer.data(), buffer.size());
 }
 
-void ToLowerReader(const std::string &name, const std::string &value, std::string &destination)
+void ToLowerReader::operator()(const std::string &name, const std::string &value, std::string &destination)
 {
     destination = value;
     std::transform(destination.begin(), destination.end(), destination.begin(), ::tolower);
