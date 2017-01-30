@@ -20,6 +20,7 @@
 #include <unordered_set>
 #include <vector>
 #include <cstdio>
+#include <cmath>
 
 #include <unistd.h>
 #include <sys/types.h>
