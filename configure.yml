@@ -1,8 +1,0 @@
-DEFAULT:
-  libs: [protobuf, json-c, openssl]
-  cxxflags: [-std=c++14]
-  cflags: [-Icppcodec]
-  debug:
-    cflags: [-O0, -DDEBUG]
-  release:
-    cflags: [-O3, -DNDEBUG]

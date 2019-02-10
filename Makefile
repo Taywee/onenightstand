@@ -1,22 +1,64 @@
-PREFIX ?= /usr/local
-.PHONY: phony release debug clean
+DEBUG ?=
+LIBS = protobuf json-c openssl
+FLAGS += -std=c++14 -MMD -MP -Wall -Wextra
+CFLAGS += $(shell pkg-config --cflags $(LIBS)) -Icppcodec
+LDFLAGS += $(shell pkg-config --libs $(LIBS))
 
-debug: phony
-	./configure -d onenightstand
-	ninja
+ifdef DEBUG
+FLAGS += -O0 -ggdb
+CFLAGS += -DDEBUG
+else
+FLAGS += -O2
+CFLAGS += -DNDEBUG
+LDFLAGS += -s
+endif
 
-release: castle
+# if OpenGL
+#UNAME := $(shell uname -s)
+#ifeq ($(UNAME),Darwin)
+#LDFLAGS += -framework OpenGL
+#else
+#LDFLAGS += -lGL
+#endif
 
-castle: phony
-	./configure onenightstand
-	ninja
+CXX ?= c++
+
+COMPILE = $(CXX) $(CFLAGS) $(FLAGS) -c
+LINK = $(CXX) $(LDFLAGS) $(FLAGS)
+
+SOURCES = main.cxx
+PBSOURCES = account.proto
+OBJECTS =  $(SOURCES:.cxx=.o) $(PBSOURCES:.proto=.pb.o)
+DEPENDENCIES = $(OBJECTS:.o=.d)
+
+EXECUTABLE = onenightstand
+
+.PHONY: all clean
+
+all: $(EXECUTABLE)
+
+test:
+	echo $(DEPENDENCIES)
+
+-include $(DEPENDENCIES)
 
 clean:
-	ninja -tclean
+	-rm -v $(OBJECTS) $(DEPENDENCIES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(LINK) -o$@ $^
+
+%.o : %.cxx
+	$(COMPILE) -o $@ $<
+
+%.pb.o: %.pb.cc
+	$(COMPILE) -o $@ $<
+
+%.pb.cc %.pb.h: %.proto
+	protoc --cpp_out=. $<
 
 install : onenightstand
 	install -m 0755 -d $(PREFIX)/bin
-	strip onenightstand
 	install -m 0755 -t $(PREFIX)/bin onenightstand
 
 uninstall :

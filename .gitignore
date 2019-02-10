@@ -29,7 +29,7 @@
 *.ninja
 .ninja_*
 *-prefix
-onenightstand
+/onenightstand
 
 # Temp files
 *.sw?
@@ -39,6 +39,7 @@ onenightstand
 *.mo
 *_pb2.py
 *.pb.*
+*.d
 
 # extracted strings
 i18n/onenightstand.pot
